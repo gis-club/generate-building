@@ -1,0 +1,32 @@
+{
+  "name": "generate-building",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "@turf/turf": "^7.3.4",
+    "cesium": "^1.140.0",
+    "element-plus": "^2.13.7",
+    "lz-string": "^1.5.0",
+    "poly-decomp": "^0.3.0",
+    "proj4": "^2.20.8",
+    "three": "^0.183.2",
+    "tslib": "^2.8.1",
+    "vue": "^3.5.32"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vue/tsconfig": "^0.9.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.4",
+    "vite-plugin-cesium": "^1.2.23",
+    "vue-tsc": "^3.2.6"
+  }
+}
