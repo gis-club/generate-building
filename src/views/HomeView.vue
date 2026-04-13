@@ -1,5 +1,8 @@
-﻿<template>
+<template>
   <div class="home-view" @click="showInfo($event, 0)">
+    <div class="home-view__ambient home-view__ambient--teal" />
+    <div class="home-view__ambient home-view__ambient--violet" />
+    <div class="home-view__mesh" />
     <div id="posList" />
     <input id="fileInput" type="file" accept=".json,.geojson" hidden />
 
@@ -14,13 +17,15 @@
 
       <aside class="left-toolbar" @click.stop>
         <div class="left-toolbar__brand">
-          <div class="left-toolbar__logo">MBS</div>
-          <div class="left-toolbar__divider" />
-          <h1>建筑白模工具</h1>
-          <strong>v1.0.1</strong>
-          <p>联系qq：274113729</p>
+          <div class="left-toolbar__logo">GIS</div>
+          <div class="left-toolbar__brand-copy">
+            <span>GIS Platform</span>
+            <h1>GIS 工作台</h1>
+            <p>更舒适、更聚焦的地理空间编辑界面</p>
+          </div>
         </div>
 
+        <div class="left-toolbar__section">基础操作</div>
         <button class="left-tool-btn" @click="handleGoNorth">回到正北</button>
         <button class="left-tool-btn" @click="handleResetHome">初始位置</button>
         <button class="left-tool-btn" @click="showComingSoon('图层控制')">图层控制</button>
@@ -29,6 +34,7 @@
         <button class="left-tool-btn" @click="openImportDialog">导入geojson</button>
         <button class="left-tool-btn" @click="exportJson(0)">导出geojson</button>
         <button class="left-tool-btn" @click="exportGltf()">导出gltf</button>
+        <div class="left-toolbar__section">模型处理</div>
         <button class="left-tool-btn" @click="updateView()">切换场景</button>
         <button class="left-tool-btn" @click="adjustAllHeight(-5)">降低整体高度</button>
         <button class="left-tool-btn" @click="adjustAllHeight(5)">升高整体高度</button>
@@ -71,20 +77,33 @@
       </aside>
 
       <div class="top-panel" @click.stop>
+        <div class="top-panel__overview">
+          <div class="top-panel__intro">
+            <span class="top-panel__eyebrow">Workspace Overview</span>
+            <strong>当前共 {{ finalData.length }} 个建筑，{{ pointCount }} 个轮廓点</strong>
+          </div>
+          <div class="top-panel__stats">
+            <div class="top-stat-chip">
+              <span>视图</span>
+              <strong>{{ visualModeLabel }}</strong>
+            </div>
+            <div class="top-stat-chip">
+              <span>场景</span>
+              <strong>{{ sceneModeLabel }}</strong>
+            </div>
+            <div class="top-stat-chip">
+              <span>账号</span>
+              <strong>{{ currUserIsTry }}</strong>
+            </div>
+          </div>
+        </div>
+
         <div class="top-panel__links">
           <button @click="showInfo($event, 1)">帮助</button>
           <button @click="showInfo($event, 2)">关于</button>
           <button @click="showInfo($event, 3)">定价</button>
-          <button @click="showInfo($event, 4)">定价说明</button>
+          <button @click="showInfo($event, 4)">说明</button>
         </div>
-
-        <div class="top-panel-tag">
-          <el-tag effect="dark">注册序号：{{ currUserId }}</el-tag>
-          <el-tag effect="dark" type="success">到期时间：{{ currUserEndTime }}</el-tag>
-          <el-tag effect="dark" type="warning">使用状态：{{ currUserIsTry }}</el-tag>
-        </div>
-
-        <div class="drag" />
       </div>
     </template>
 
@@ -100,7 +119,7 @@
           <div class="help-column">
             <p>绘制区域：左键逐点绘制，双击结束</p>
             <p>编辑顶点：选中点后拖动，右键删除</p>
-            <p>插入顶点：双击线段插入新点</p>
+            <p>插入顶点：单击线段附近插入新点</p>
           </div>
         </div>
       </div>
@@ -109,13 +128,8 @@
     <div v-if="infoShow2" class="top-info" @click.stop>
       <div class="top">关于</div>
       <div class="bottom">
-        <p>软件名称：建筑白模工具</p>
-        <p>版本号：v1.0.1</p>
-        <p>作者：图界mbs</p>
-        <p>B站：https://space.bilibili.com/43506538</p>
-        <p>联系 QQ：274113729</p>
-        <p>使用状态：{{ currUserIsTry }}</p>
-        <p>到期时间：{{ currUserEndTime }}</p>
+        <p>GIS 工作台用于快速完成地图浏览、区域绘制、参数调整、AI 辅助识别与模型导出。</p>
+        <p>当前项目运行于纯前端预览模式，适合本地联调、界面演示与交互优化。</p>
       </div>
     </div>
 
@@ -123,27 +137,34 @@
       <div class="top">定价</div>
       <div class="bottom">
         <ul class="price-list">
-          <li><span>月度</span><strong>¥39</strong></li>
-          <li><span>季度</span><strong>¥66</strong></li>
-          <li><span>年度</span><strong>¥98</strong></li>
+          <li>
+            <span>离线预览版</span>
+            <strong>当前可用</strong>
+          </li>
+          <li>
+            <span>专业版</span>
+            <strong>待接入</strong>
+          </li>
+          <li>
+            <span>企业版</span>
+            <strong>待接入</strong>
+          </li>
         </ul>
-        <div class="mbs-price-precautions">
-          <p>联系 QQ：274113729 咨询付费</p>
-          <p>售后时间：工作日 09:00 - 17:00</p>
-        </div>
       </div>
     </div>
 
     <div v-if="infoShow4" class="top-info" @click.stop>
-      <div class="top">定价说明</div>
+      <div class="top">说明</div>
       <div class="bottom">
-        <div class="mbs-price-precautions">
-          <p>付款时提供注册序号，一台电脑对应一个序号。</p>
-          <p>默认试用 15 天，关注 B 站账号可额外获取试用期。</p>
-          <p>后续功能会持续更新，价格以付款时页面展示为准。</p>
-        </div>
+        <p>当前界面重点围绕白模高频工作流进行重构，预留的业务入口可继续挂接真实服务。</p>
+        <p>如需进一步升级，下一步建议补齐图层管理、对象筛选和多视图联动能力。</p>
       </div>
     </div>
+
+
+
+
+
 
     <div v-if="errShow1" class="top-info top-info--warning" @click.stop>
       <div class="top">重要提示</div>
@@ -215,13 +236,50 @@
       :style="{ height: `${mapDivHeight - 70}px` }"
       @click.stop
     >
+      <div class="right-toolbar__header">
+        <div class="right-toolbar__title">
+          <span class="right-toolbar__eyebrow">Inspector</span>
+          <strong>建筑参数面板</strong>
+        </div>
+        <button class="right-toolbar__toggle" @click="toggleAllPanels">{{ panelToggleText }}</button>
+      </div>
+
+      <div class="right-toolbar__stats">
+        <div class="right-stat-card">
+          <span>建筑</span>
+          <strong>{{ finalData.length }}</strong>
+        </div>
+        <div class="right-stat-card">
+          <span>轮廓点</span>
+          <strong>{{ pointCount }}</strong>
+        </div>
+        <div class="right-stat-card">
+          <span>平均高度</span>
+          <strong>{{ averageExtrudeHeight }}m</strong>
+        </div>
+      </div>
+
       <div v-for="item in finalData" :key="item.id" class="geometry-card">
         <div
           class="geometry-card__title"
-          :style="item.panelShow ? { background: item.color, borderColor: item.color, color: '#ffffff' } : {}"
+          :style="
+            item.panelShow
+              ? {
+                  background: `linear-gradient(135deg, ${item.color}, rgba(109, 125, 255, 0.92))`,
+                  borderColor: item.color,
+                  color: '#ffffff'
+                }
+              : {}
+          "
           @click="updatePanel(item.id)"
         >
-          <span>几何体 {{ item.id + 1 }}</span>
+          <div class="geometry-card__title-copy">
+            <span class="geometry-card__serial">#{{ item.id + 1 }}</span>
+            <div>
+              <strong>{{ item.name || `几何体 ${item.id + 1}` }}</strong>
+              <small>{{ Math.max(item.lonlats.length - 1, 0) }} 个轮廓点</small>
+            </div>
+          </div>
           <button class="geometry-card__delete" @click.stop="deleteSingle(item.id)">
             <el-icon><Delete /></el-icon>
           </button>
@@ -229,14 +287,20 @@
 
         <div v-show="item.panelShow" class="geometry-card__body">
           <div class="tool-content">
-            <h4 class="tool-content__tag">坐标（{{ item.lonlats.length }} 个）</h4>
-            <el-input v-model="item.name" size="small" @change="updateAll">
+            <div class="tool-content__head">
+              <h4 class="tool-content__tag">基础信息</h4>
+              <span class="tool-content__meta">坐标（{{ item.lonlats.length }} 个）</span>
+            </div>
+            <el-input v-model="item.name" size="small" placeholder="请输入建筑名称" @change="updateAll">
               <template #prepend>名称</template>
             </el-input>
           </div>
 
           <div class="tool-content tool-content--params">
-            <h4 class="tool-content__tag">配参</h4>
+            <div class="tool-content__head">
+              <h4 class="tool-content__tag">参数设置</h4>
+              <span class="tool-content__meta">实时刷新</span>
+            </div>
             <div class="params-row">
               <span>底部高度</span>
               <el-input-number
@@ -265,12 +329,15 @@
 
             <div class="params-row">
               <span>选择颜色</span>
-              <el-color-picker
-                v-model="item.color"
-                :predefine="predefineColors"
-                size="small"
-                @change="updateAll"
-              />
+              <div class="params-row__color">
+                <span class="color-dot" :style="{ background: item.color }" />
+                <el-color-picker
+                  v-model="item.color"
+                  :predefine="predefineColors"
+                  size="small"
+                  @change="updateAll"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -304,6 +371,28 @@ export default {
     return {
       ...baseData,
       selectedVisualMode: 'preview'
+    }
+  },
+  computed: {
+    pointCount() {
+      if (!Array.isArray(this.finalData)) return 0
+      return this.finalData.reduce((total, item) => total + Math.max((item.lonlats?.length || 1) - 1, 0), 0)
+    },
+    averageExtrudeHeight() {
+      if (!Array.isArray(this.finalData) || this.finalData.length === 0) return 0
+      const total = this.finalData.reduce((sum, item) => sum + Number(item.extrudeHeight || 0), 0)
+      return Math.round(total / this.finalData.length)
+    },
+    visualModeLabel() {
+      if (this.selectedVisualMode === 'wireframe') return '线框预览'
+      if (this.selectedVisualMode === 'hidden') return '隐藏模型'
+      return '实体预览'
+    },
+    sceneModeLabel() {
+      return this.sceneFlag ? '地球场景' : '纯净背景'
+    },
+    panelToggleText() {
+      return this.allPanelShow ? '全部收起' : '展开全部'
     }
   },
   methods: {
@@ -421,8 +510,9 @@ export default {
      * 一键折叠/展开右侧所有几何配置卡片。
      */
     toggleAllPanels() {
-      this.fold(this.allPanelShow)
-      this.allPanelShow = !this.allPanelShow
+      const next = !this.allPanelShow
+      this.fold(next)
+      this.allPanelShow = next
     },
     /**
      * 切换模型显示模式。
@@ -474,12 +564,67 @@ body,
 }
 
 .home-view {
+  --home-text: #f7f9ff;
+  --home-text-muted: #aebbd8;
+  --home-panel: rgba(8, 16, 30, 0.78);
+  --home-panel-soft: rgba(255, 255, 255, 0.05);
+  --home-panel-border: rgba(255, 255, 255, 0.08);
+  --home-accent: #74dbc8;
+  --home-accent-strong: #7d8eff;
+  --home-shadow: 0 28px 60px rgba(0, 0, 0, 0.26);
+  --el-color-primary: #7d8eff;
+  --el-text-color-primary: #f7f9ff;
+  --el-text-color-regular: #dbe3f7;
+  --el-text-color-secondary: #aebbd8;
+  --el-border-color: rgba(255, 255, 255, 0.1);
+  --el-border-color-light: rgba(255, 255, 255, 0.08);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.06);
+  --el-fill-color-blank: rgba(255, 255, 255, 0.05);
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background: #0b1020;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(73, 210, 183, 0.14), transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(125, 142, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #07111f 0%, #091628 56%, #0a1831 100%);
+  color: var(--home-text);
+  font-family: Inter, 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+
+.home-view__ambient,
+.home-view__mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.home-view__ambient {
+  filter: blur(90px);
+}
+
+.home-view__ambient--teal {
+  top: -8%;
+  left: -10%;
+  width: 34vw;
+  height: 34vw;
+  background: radial-gradient(circle, rgba(73, 210, 183, 0.42), transparent 70%);
+}
+
+.home-view__ambient--violet {
+  top: 8%;
+  right: -6%;
+  width: 28vw;
+  height: 28vw;
+  background: radial-gradient(circle, rgba(125, 142, 255, 0.32), transparent 70%);
+}
+
+.home-view__mesh {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 74%);
 }
 
 .map-layer,
@@ -494,144 +639,227 @@ body,
 
 .left-toolbar {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 24px;
+  left: 24px;
+  bottom: 24px;
   z-index: 30;
   display: flex;
   flex-direction: column;
-  width: 184px;
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 0 0 1px rgba(54, 82, 156, 0.08);
+  width: 220px;
+  padding: 18px 14px;
+  overflow-y: auto;
+  border: 1px solid var(--home-panel-border);
+  border-radius: 28px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
 }
 
 .left-toolbar__brand {
-  padding: 10px 10px 14px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 10px;
+  padding: 6px 6px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .left-toolbar__logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
-  height: 72px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #42d392, #647eff);
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #42d392, #647eff 60%, #9b6dff);
   color: #07111f;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 900;
-  letter-spacing: 2px;
-  box-shadow: 0 18px 30px rgba(66, 211, 146, 0.18);
+  letter-spacing: 1px;
+  box-shadow: 0 18px 36px rgba(66, 211, 146, 0.2);
 }
 
-.left-toolbar__divider {
-  height: 2px;
-  margin-top: 6px;
-  background: linear-gradient(90deg, #4ed7b8, #5d75ff);
+.left-toolbar__brand-copy span,
+.top-panel__eyebrow,
+.right-toolbar__eyebrow {
+  color: var(--home-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
-.left-toolbar__brand h1 {
-  margin: 12px 0 6px;
-  font-size: 19px;
-  line-height: 1.3;
-  color: #46cdb8;
+.left-toolbar__brand-copy h1 {
+  margin: 6px 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--home-text);
 }
 
-.left-toolbar__brand strong {
-  display: block;
-  font-size: 17px;
-  color: #6b72ff;
+.left-toolbar__brand-copy p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--home-text-muted);
 }
 
-.left-toolbar__brand p {
-  margin: 10px 0 0;
-  font-size: 14px;
-  color: #d94a78;
+.left-toolbar__section {
+  margin: 16px 6px 8px;
+  color: var(--home-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .left-tool-btn {
-  height: 34px;
+  min-height: 42px;
+  margin-bottom: 8px;
   padding: 0 14px;
-  border: 0;
-  border-top: 1px solid #dfdfdf;
-  background: rgba(255, 255, 255, 0.9);
-  color: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--home-text);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .left-tool-btn:hover,
 .left-tool-btn.is-active {
-  background: #1677ff;
+  transform: translateY(-1px);
+  border-color: rgba(125, 142, 255, 0.25);
+  background: linear-gradient(135deg, rgba(116, 219, 200, 0.18), rgba(125, 142, 255, 0.22));
   color: #ffffff;
 }
 
 .top-panel {
   position: absolute;
-  top: 0;
-  left: 184px;
-  right: 0;
+  top: 24px;
+  left: 268px;
+  right: 24px;
   z-index: 28;
   display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 108px;
+  padding: 18px 22px;
+  border: 1px solid var(--home-panel-border);
+  border-radius: 28px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
+}
+
+.top-panel__overview {
+  display: flex;
+  flex: 1;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 0 18px 0 22px;
-  background: rgba(255, 255, 255, 0.96);
+  gap: 18px;
+}
+
+.top-panel__intro strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.top-panel__stats {
+  display: flex;
+  gap: 10px;
+}
+
+.top-stat-chip {
+  min-width: 96px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.top-stat-chip span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--home-text-muted);
+  font-size: 12px;
+}
+
+.top-stat-chip strong {
+  font-size: 14px;
+  color: var(--home-text);
 }
 
 .top-panel__links {
   display: flex;
-  gap: 22px;
+  align-items: center;
+  gap: 10px;
 }
 
 .top-panel__links button {
-  border: 0;
-  background: transparent;
-  color: #111111;
-  font-size: 16px;
+  min-width: 72px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--home-text);
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.top-panel-tag {
-  display: flex;
-  gap: 10px;
+.top-panel__links button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(125, 142, 255, 0.28);
+  background: rgba(125, 142, 255, 0.16);
 }
 
 .top-info,
 .side-dialog {
   position: absolute;
   z-index: 40;
-  width: 380px;
-  border-radius: 14px;
+  width: 400px;
+  border-radius: 24px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 20px 60px rgba(10, 20, 60, 0.24);
+  border: 1px solid var(--home-panel-border);
+  background: rgba(8, 16, 30, 0.86);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
 }
 
 .top-info {
-  top: 72px;
-  left: 220px;
+  top: 148px;
+  left: 268px;
 }
 
 .top-info--warning {
-  width: 420px;
+  right: 24px;
+  left: auto;
+  width: 360px;
 }
 
 .side-dialog {
-  top: 170px;
-  left: 220px;
+  top: 148px;
+  left: 268px;
+  width: 430px;
 }
 
 .top-info .top,
 .side-dialog .top {
-  padding: 14px 18px;
-  background: linear-gradient(135deg, #1f6fff, #7346ff);
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(116, 219, 200, 0.24), rgba(125, 142, 255, 0.28));
   color: #ffffff;
   font-size: 16px;
   font-weight: 700;
@@ -639,8 +867,8 @@ body,
 
 .top-info .bottom,
 .side-dialog .bottom {
-  padding: 18px;
-  color: #24324b;
+  padding: 20px;
+  color: var(--home-text);
   font-size: 14px;
   line-height: 1.8;
 }
@@ -668,51 +896,145 @@ body,
 .price-list li {
   display: flex;
   justify-content: space-between;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: #f5f7ff;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
   font-weight: 700;
 }
 
 .right-toolbar {
   position: absolute;
-  top: 58px;
-  right: 16px;
+  top: 148px;
+  right: 24px;
   z-index: 26;
-  width: 286px;
-  padding: 12px 12px 40px;
+  width: 340px;
+  padding: 18px 18px 40px;
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(4px);
+  border: 1px solid var(--home-panel-border);
+  border-radius: 28px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
+}
+
+.right-toolbar__header,
+.right-toolbar__title,
+.right-toolbar__stats,
+.geometry-card__title-copy,
+.tool-content__head,
+.params-row__color {
+  display: flex;
+}
+
+.right-toolbar__header,
+.tool-content__head {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.right-toolbar__header {
+  margin-bottom: 14px;
+}
+
+.right-toolbar__title {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.right-toolbar__title strong {
+  font-size: 20px;
+}
+
+.right-toolbar__toggle {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--home-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.right-toolbar__stats {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.right-stat-card {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.right-stat-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--home-text-muted);
+  font-size: 12px;
+}
+
+.right-stat-card strong {
+  color: var(--home-text);
+  font-size: 18px;
 }
 
 .geometry-card {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .geometry-card__title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 36px;
-  padding-left: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.94);
-  color: #111111;
-  font-size: 16px;
-  font-weight: 800;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text);
   cursor: pointer;
+}
+
+.geometry-card__title-copy {
+  align-items: center;
+  gap: 12px;
+}
+
+.geometry-card__title-copy strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.geometry-card__title-copy small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.geometry-card__serial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .geometry-card__delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  margin-right: 6px;
+  width: 36px;
+  height: 36px;
   border: 0;
-  border-radius: 50%;
+  border-radius: 14px;
   background: #ff5b2e;
   color: #ffffff;
   cursor: pointer;
@@ -724,20 +1046,23 @@ body,
 
 .tool-content {
   margin-bottom: 12px;
-  padding: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.75);
-  border-radius: 12px;
-  background: rgba(145, 145, 145, 0.78);
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .tool-content__tag {
   display: inline-block;
-  margin: 0 0 12px;
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #333333;
+  margin: 0;
+  color: var(--home-text);
   font-size: 14px;
   font-weight: 700;
+}
+
+.tool-content__meta {
+  color: var(--home-text-muted);
+  font-size: 12px;
 }
 
 .tool-content--params {
@@ -750,9 +1075,21 @@ body,
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
-  color: #ffffff;
+  color: var(--home-text);
   font-size: 15px;
   font-weight: 700;
+}
+
+.params-row__color {
+  align-items: center;
+  gap: 10px;
+}
+
+.color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
 }
 
 .params-row .el-input-number {
@@ -763,10 +1100,94 @@ body,
   justify-content: flex-end;
 }
 
+.home-view .el-input__wrapper,
+.home-view .el-input-number,
+.home-view .el-color-picker__trigger {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.home-view .el-input-group__prepend {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--home-text-muted);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.home-view .el-form-item__label {
+  color: var(--home-text-muted);
+}
+
+.home-view .el-button:not(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--home-text);
+}
+
 #mbs-widget1,
 #mbs-widget2,
 #mbs-widget {
   display: none !important;
 }
-</style>
 
+@media (max-width: 1480px) {
+  .top-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .top-panel__overview {
+    width: 100%;
+  }
+
+  .top-panel__stats {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 1280px) {
+  .left-toolbar,
+  .top-panel,
+  .right-toolbar,
+  .top-info,
+  .side-dialog {
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  .left-toolbar {
+    top: 20px;
+    bottom: auto;
+    width: calc(100% - 40px);
+    max-height: 320px;
+  }
+
+  .top-panel {
+    top: 364px;
+  }
+
+  .top-info,
+  .side-dialog {
+    top: 500px;
+  }
+
+  .right-toolbar {
+    top: 640px;
+  }
+}
+
+@media (max-width: 960px) {
+  .home-view {
+    overflow-y: auto;
+  }
+
+  .top-panel__overview,
+  .top-panel__stats,
+  .right-toolbar__stats,
+  .help-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+</style>

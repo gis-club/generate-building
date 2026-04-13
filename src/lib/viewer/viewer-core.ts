@@ -104,8 +104,6 @@ export const viewerCoreMethods = {
     if (this.terrain.terrainFlag && this.terrain.terrainType === 'sineXY') {
       this.sineTerrainProviderXY(viewer)
     }
-
-    this.addLogo(viewer)
     return viewer
   },
 

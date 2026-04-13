@@ -80,6 +80,12 @@ function syncGeometryIds(finalData) {
   }
 }
 
+const VERTEX_INSERT_SNAP_DISTANCE_PIXELS = 36
+
+function buildPolylinePositions(lonlats = []) {
+  return lonlats.map((point) => Cesium.Cartesian3.fromDegrees(point[0], point[1], point[2] || 0))
+}
+
 export const homeViewDrawEditMethods = {
   /**
    * 取消当前绘制流程，并回收草稿数据。
@@ -153,9 +159,20 @@ export const homeViewDrawEditMethods = {
         shadows: false,
         instancesArr,
         polygonShow: false,
-        polygonOutlineShow: true,
-        pointVertexShow: true
+        polygonOutlineShow: true
       })
+
+      if (this.pickedPointEndFlag) {
+        this.myGeometry.basePolyline({
+          viewer: window.myViewer,
+          signStr: 'build',
+          instancesArr,
+          pointVertexShow: true,
+          pointPixelSize: 12,
+          pointOutlineWidth: 3,
+          lineWidth: 18
+        })
+      }
     } else {
       this.myGeometry.basePolygon({
         viewer: window.myViewer,
@@ -359,15 +376,31 @@ export const homeViewDrawEditMethods = {
       if (type !== 'map') return
 
       const picked = viewer.scene.pick(event.position)
+
+      if (this.modelMode === 'vertex') {
+        if (this.suppressNextVertexInsert) {
+          this.suppressNextVertexInsert = false
+          return
+        }
+
+        if (picked != null && picked.primitive instanceof Cesium.PointPrimitive) {
+          return
+        }
+
+        let polygonIndex = -1
+        if (picked != null && picked.id != null && !(picked.id instanceof Cesium.Entity)) {
+          polygonIndex = parseInt(`${picked.id}`.split('_')[0])
+        }
+
+        if (this.insertVertexAtScreenPosition(event.position, polygonIndex)) {
+          return
+        }
+      }
+
       if (picked == null || picked.id == null || picked.id instanceof Cesium.Entity) return
       if (picked.id.indexOf('_build') === -1) return
 
       if (picked.primitive instanceof Cesium.PointPrimitive) {
-        this.pickedPoint = picked.primitive
-        this.pickedPointEndFlag = false
-        this.pickedPoint.pixelSize = 12
-        this.pickedPoint.outlineWidth = 4
-        this.pickedPoint.color.green = 0
         return
       }
 
@@ -388,7 +421,38 @@ export const homeViewDrawEditMethods = {
 
     handler.setInputAction((event) => {
       if (this.drawingActive) return
-      if (type !== 'map' || this.pickedPoint == null || this.pickedPointEndFlag) return
+      if (type !== 'map' || this.modelMode !== 'vertex') return
+
+      const picked = viewer.scene.pick(event.position)
+      if (
+        picked == null ||
+        picked.id == null ||
+        picked.id instanceof Cesium.Entity ||
+        picked.id.indexOf('_build') === -1 ||
+        !(picked.primitive instanceof Cesium.PointPrimitive)
+      ) {
+        return
+      }
+
+      this.pickedPoint = picked.primitive
+      this.pickedPointEndFlag = false
+      this.suppressNextVertexInsert = false
+      this.pickedPoint.pixelSize = 14
+      this.pickedPoint.outlineWidth = 4
+      this.pickedPoint.color = Cesium.Color.ORANGE
+      this.setVertexEditLock(true)
+    }, Cesium.ScreenSpaceEventType.LEFT_DOWN)
+
+    handler.setInputAction((event) => {
+      if (this.drawingActive) return
+      if (
+        type !== 'map' ||
+        this.modelMode !== 'vertex' ||
+        this.pickedPoint == null ||
+        this.pickedPointEndFlag
+      ) {
+        return
+      }
 
       const endPosition = event.endPosition
       if (!Cesium.defined(endPosition)) return
@@ -399,92 +463,80 @@ export const homeViewDrawEditMethods = {
       const globePoint = viewer.scene.globe.pick(ray, viewer.scene)
       if (!Cesium.defined(globePoint)) return
 
-      this.pickedPoint.position = globePoint
-
-      const ids = this.pickedPoint.id.split('_')
-      const pointIndex = parseInt(ids[0])
-      const polygonIndex = parseInt(ids[1])
-      const lonlat = this.toLonLat(globePoint)
-
-      this.finalData[polygonIndex].lonlats[pointIndex] = lonlat
-      if (pointIndex === 0) {
-        this.finalData[polygonIndex].lonlats[this.finalData[polygonIndex].lonlats.length - 1] =
-          lonlat
-      }
-      this.updateAll()
+      this.syncPickedPoint(globePoint)
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
 
     handler.setInputAction((event) => {
       if (this.drawingActive) return
-      if (type !== 'map') return
-
-      const picked = viewer.scene.pick(event.position)
       if (
-        picked != null &&
-        picked.id != null &&
-        picked.primitive instanceof Cesium.PointPrimitive &&
-        this.pickedPoint != null
+        type !== 'map' ||
+        this.modelMode !== 'vertex' ||
+        this.pickedPoint == null ||
+        this.pickedPointEndFlag
       ) {
-        const ray = viewer.camera.getPickRay(event.position)
-        if (!Cesium.defined(ray)) return
+        return
+      }
 
-        const globePoint = viewer.scene.globe.pick(ray, viewer.scene)
-        if (!Cesium.defined(globePoint)) return
-
-        this.pickedPoint.position = globePoint
+      const position = event.position || event.endPosition
+      if (!Cesium.defined(position)) {
         this.pickedPointEndFlag = true
-
-        const ids = this.pickedPoint.id.split('_')
-        const pointIndex = parseInt(ids[0])
-        const polygonIndex = parseInt(ids[1])
-        const lonlat = this.toLonLat(globePoint)
-
-        this.finalData[polygonIndex].lonlats[pointIndex] = lonlat
-        if (pointIndex === 0) {
-          this.finalData[polygonIndex].lonlats[this.finalData[polygonIndex].lonlats.length - 1] =
-            lonlat
-        }
+        this.setVertexEditLock(false)
         this.updateAll()
+        return
       }
 
-      if (
-        picked != null &&
-        picked.id != null &&
-        picked.primitive instanceof Cesium.GroundPolylinePrimitive
-      ) {
-        const ray = viewer.camera.getPickRay(event.position)
-        if (!Cesium.defined(ray)) return
-
-        const globePoint = viewer.scene.globe.pick(ray, viewer.scene)
-        if (!Cesium.defined(globePoint)) return
-
-        const ids = picked.id.split('_')
-        const polygonIndex = parseInt(ids[0])
-        const positions = picked.primitive.geometryInstances[polygonIndex].geometry._positions
-        const insertAt = this.checkIfPointOnPolyline(globePoint, positions)
-        const lonlat = this.toLonLat(globePoint)
-
-        this.finalData[polygonIndex].lonlats.splice(insertAt + 1, 0, lonlat)
+      const ray = viewer.camera.getPickRay(position)
+      if (!Cesium.defined(ray)) {
+        this.pickedPointEndFlag = true
+        this.setVertexEditLock(false)
         this.updateAll()
+        return
       }
-    }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+
+      const globePoint = viewer.scene.globe.pick(ray, viewer.scene)
+      if (!Cesium.defined(globePoint)) {
+        this.pickedPointEndFlag = true
+        this.setVertexEditLock(false)
+        this.updateAll()
+        return
+      }
+
+      this.syncPickedPoint(globePoint)
+      this.pickedPointEndFlag = true
+      this.setVertexEditLock(false)
+      this.updateAll()
+      this.pickedPoint = null
+      this.suppressNextVertexInsert = true
+    }, Cesium.ScreenSpaceEventType.LEFT_UP)
 
     handler.setInputAction((event) => {
       if (this.drawingActive) return
-      if (type !== 'map' || this.pickedPoint == null) return
+      if (type !== 'map' || this.modelMode !== 'vertex') return
 
-      const ray = viewer.camera.getPickRay(event.position)
-      if (!Cesium.defined(ray)) return
+      const picked = viewer.scene.pick(event.position)
+      if (
+        picked == null ||
+        picked.id == null ||
+        picked.id instanceof Cesium.Entity ||
+        picked.id.indexOf('_build') === -1 ||
+        !(picked.primitive instanceof Cesium.PointPrimitive)
+      ) {
+        return
+      }
 
-      const globePoint = viewer.scene.globe.pick(ray, viewer.scene)
-      if (!Cesium.defined(globePoint)) return
-
-      this.pickedPoint.position = globePoint
-      this.pickedPointEndFlag = true
-
-      const ids = this.pickedPoint.id.split('_')
+      const ids = `${picked.primitive.id}`.split('_')
       const pointIndex = parseInt(ids[0])
       const polygonIndex = parseInt(ids[1])
+      if (Number.isNaN(pointIndex) || Number.isNaN(polygonIndex) || this.finalData[polygonIndex] == null) {
+        return
+      }
+
+      if (this.finalData[polygonIndex].lonlats.length <= 4) {
+        if (typeof window.Mx === 'function') {
+          window.Mx({ type: 'warning', message: '区域至少保留三个顶点' })
+        }
+        return
+      }
 
       this.finalData[polygonIndex].lonlats.splice(pointIndex, 1)
       if (pointIndex === 0) {
@@ -496,32 +548,143 @@ export const homeViewDrawEditMethods = {
           this.finalData[polygonIndex].lonlats[0]
       }
 
+      this.pickedPoint = null
+      this.pickedPointEndFlag = true
+      this.setVertexEditLock(false)
       this.updateAll()
     }, Cesium.ScreenSpaceEventType.RIGHT_CLICK)
   },
-  checkIfPointOnPolyline(cartesian, positions) {
-    let insertAt = -1
-    const point = this.toLonLat(cartesian)
-    point.pop()
-
-    for (let index = 0; index < positions.length - 1; index++) {
-      let start = this.toLonLat(positions[index])
-      let end = this.toLonLat(positions[index + 1])
-      start.pop()
-      end.pop()
-      const distance = this.distanceToSegment(point, start, end)
-      if (distance < 0.1) {
-        insertAt = index
-        break
+  insertVertexAtScreenPosition(screenPosition, preferredPolygonIndex = -1) {
+    let match = this.checkIfPointOnPolyline(screenPosition, preferredPolygonIndex, true)
+    if (match.insertAt < 0) {
+      for (let index = 0; index < this.finalData.length; index++) {
+        if (index === preferredPolygonIndex) continue
+        const current = this.checkIfPointOnPolyline(screenPosition, index, true)
+        if (current.insertAt < 0) continue
+        if (match.insertAt < 0 || current.distance < match.distance) {
+          match = current
+        }
       }
     }
 
-    return insertAt
+    if (match.insertAt < 0 || match.polygonIndex < 0) {
+      return false
+    }
+
+    const lonlat = this.interpolateLonlatOnSegment(
+      match.polygonIndex,
+      match.insertAt,
+      match.ratio
+    )
+
+    this.finalData[match.polygonIndex].lonlats.splice(match.insertAt + 1, 0, lonlat)
+    this.updateAll()
+    return true
   },
-  distanceToSegment(point, start, end) {
-    return turf.pointToLineDistance(turf.point(point), turf.lineString([start, end]), {
-      units: 'meters'
-    })
+  checkIfPointOnPolyline(screenPosition, polygonIndex, withDistance = false) {
+    const scene = myViewer?.viewer?.scene
+    const lonlats = this.finalData[polygonIndex]?.lonlats
+    if (!scene || !screenPosition || !Array.isArray(lonlats) || lonlats.length < 2) {
+      return withDistance
+        ? { polygonIndex, insertAt: -1, distance: Number.POSITIVE_INFINITY, ratio: 0.5 }
+        : -1
+    }
+
+    const positions = buildPolylinePositions(lonlats)
+    let insertAt = -1
+    let minDistance = Number.POSITIVE_INFINITY
+    let bestRatio = 0.5
+
+    for (let index = 0; index < positions.length - 1; index++) {
+      const start = Cesium.SceneTransforms.worldToWindowCoordinates(scene, positions[index])
+      const end = Cesium.SceneTransforms.worldToWindowCoordinates(scene, positions[index + 1])
+      if (!Cesium.defined(start) || !Cesium.defined(end)) continue
+
+      const projection = this.projectPointToScreenSegment(screenPosition, start, end)
+      if (projection.distance < minDistance) {
+        minDistance = projection.distance
+        insertAt = index
+        bestRatio = projection.ratio
+      }
+    }
+
+    const result = {
+      polygonIndex,
+      insertAt: minDistance > VERTEX_INSERT_SNAP_DISTANCE_PIXELS ? -1 : insertAt,
+      distance: minDistance,
+      ratio: bestRatio
+    }
+
+    return withDistance ? result : result.insertAt
+  },
+  projectPointToScreenSegment(point, start, end) {
+    const deltaX = end.x - start.x
+    const deltaY = end.y - start.y
+    const lengthSquared = deltaX * deltaX + deltaY * deltaY
+
+    if (lengthSquared === 0) {
+      return {
+        distance: Math.hypot(point.x - start.x, point.y - start.y),
+        ratio: 0
+      }
+    }
+
+    const ratio =
+      ((point.x - start.x) * deltaX + (point.y - start.y) * deltaY) / lengthSquared
+    const clampedRatio = Math.max(0, Math.min(1, ratio))
+    const projectedX = start.x + deltaX * clampedRatio
+    const projectedY = start.y + deltaY * clampedRatio
+
+    return {
+      distance: Math.hypot(point.x - projectedX, point.y - projectedY),
+      ratio: clampedRatio
+    }
+  },
+  interpolateLonlatOnSegment(polygonIndex, segmentIndex, ratio) {
+    const lonlats = this.finalData[polygonIndex]?.lonlats
+    if (!Array.isArray(lonlats) || lonlats[segmentIndex + 1] == null) {
+      return [0, 0, 0]
+    }
+
+    const start = lonlats[segmentIndex]
+    const end = lonlats[segmentIndex + 1]
+    const safeRatio = Math.max(0.05, Math.min(0.95, ratio))
+
+    return [
+      parseFloat((start[0] + (end[0] - start[0]) * safeRatio).toFixed(6)),
+      parseFloat((start[1] + (end[1] - start[1]) * safeRatio).toFixed(6)),
+      parseFloat(((start[2] || 0) + ((end[2] || 0) - (start[2] || 0)) * safeRatio).toFixed(2))
+    ]
+  },
+  setVertexEditLock(locked) {
+    const controller = myViewer?.viewer?.scene?.screenSpaceCameraController
+    if (!controller) return
+
+    const enabled = !locked
+    controller.enableRotate = enabled
+    controller.enableTranslate = enabled
+    controller.enableTilt = enabled
+    controller.enableLook = enabled
+  },
+  syncPickedPoint(globePoint) {
+    if (!Cesium.defined(globePoint) || this.pickedPoint == null) return false
+
+    this.pickedPoint.position = globePoint
+
+    const ids = `${this.pickedPoint.id}`.split('_')
+    const pointIndex = parseInt(ids[0])
+    const polygonIndex = parseInt(ids[1])
+    if (Number.isNaN(pointIndex) || Number.isNaN(polygonIndex) || this.finalData[polygonIndex] == null) {
+      return false
+    }
+
+    const lonlat = this.toLonLat(globePoint)
+    this.finalData[polygonIndex].lonlats[pointIndex] = lonlat
+    if (pointIndex === 0) {
+      this.finalData[polygonIndex].lonlats[this.finalData[polygonIndex].lonlats.length - 1] = [...lonlat]
+    }
+
+    return true
   },
   toLonLat(cartesian) {
     const cartographic = myViewer.viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian)

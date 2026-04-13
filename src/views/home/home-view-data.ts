@@ -97,6 +97,9 @@ export function createHomeViewRecoveredData() {
      */
     drawingActive: false,
     drawingDraftId: null,
+    pickedPoint: null,
+    pickedPointEndFlag: true,
+    suppressNextVertexInsert: false,
     aiRunning: false,
     aiError: '',
     samMinHeightResult: [],

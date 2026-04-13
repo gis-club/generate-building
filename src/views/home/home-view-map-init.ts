@@ -10,8 +10,6 @@
  * 地图初始化与页面级 UI 交互逻辑。
  * 这里负责 Cesium Viewer、基础控件、导入文件、视图刷新和面板联动。
  */
-const HOME_WIDGET_LOGO_DATA_URI = ''
-
 const HOME_WIDGET_MODULES = [
   '自定义位置',
   '自定义图层',
@@ -256,9 +254,6 @@ export const homeViewMapInitMethods = {
     })
 
     window.myViewer = viewer
-    viewer.viewer.scene.highDynamicRange = true
-    viewer.viewer.scene.postProcessStages.exposure = 10
-    viewer.viewer.scene.postProcessStages.tonemapper = Cesium.Tonemapper.MODIFIED_REINHARD
   },
   operate(licensePassed) {
     this.baseWidgetObject = new BaseWidgetRecovered()
@@ -270,17 +265,7 @@ export const homeViewMapInitMethods = {
       textShow: true,
       buttons: [0, 1, 2],
       customStyle: { top: -100, left: 0, width: 185, buttonWidth: 185 },
-      customPrevModule: [
-        {
-          name:
-            "<div style='border-bottom: 2px solid;border-image: -webkit-linear-gradient(315deg, #42d392 25%, #647eff) 1;height: 39px;'>" +
-            "<img src='" +
-            HOME_WIDGET_LOGO_DATA_URI +
-            "' style='width:21%;float: left;margin-left: 10%;'/>" +
-            "<br/><span style='font-weight: 600;font-size: 20px; font-style: italic;margin-left: -20px;line-height: 0;background: -webkit-linear-gradient(315deg, #42d392 25%, #647eff);background-clip: text;-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>图界mbs</span>" +
-            "<br/></div><div class='mbs-widget-tool' style='font-weight: 800;font-size: 20px;margin-top: 10px;background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);background-clip: text;-webkit-background-clip: text;-webkit-text-fill-color: transparent;'>建筑白模工具v1.0.1<br/><span style='font-weight: 600;font-size: 15px;'>联系qq：274113729</span></div>"
-        }
-      ],
+      customPrevModule: [],
       customModule: createHomeWidgetModules(licensePassed),
       homePos: { pos: [113.73, 34.77], heading: 0, pitch: -90, distance: 4000 }
     })
@@ -315,16 +300,19 @@ export const homeViewMapInitMethods = {
     bindWidgetButton(this, '降低整体高度', () => this.adjustAllHeight(-5))
     bindWidgetButton(this, '升高整体高度', () => this.adjustAllHeight(5))
     bindWidgetButton(this, '预览模型', () => {
+      this.selectedVisualMode = 'preview'
       this.modelMode = undefined
       this.highlightButton('预览模型')
       this.genBuild()
     })
     bindWidgetButton(this, '线框化', () => {
+      this.selectedVisualMode = 'wireframe'
       this.modelMode = 'vertex'
       this.highlightButton('线框化')
       this.vertexBuild()
     })
     bindWidgetButton(this, '隐藏模型', () => {
+      this.selectedVisualMode = 'hidden'
       this.modelMode = 'hidden'
       this.highlightButton('隐藏模型')
       this.updateAll()

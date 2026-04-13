@@ -91,19 +91,24 @@ export const geometryBuildMethods = {
           const point = item.pos[pointIndex]
           const groundPosition = Cesium.Cartesian3.fromDegrees(point[0], point[1], item.groundHeight)
           const roofPosition = Cesium.Cartesian3.fromDegrees(point[0], point[1], item.height)
+          const pointId = `${pointIndex}_${item.id}`
           pointCollection.add({
             position: groundPosition,
-            pixelSize: 6,
+            pixelSize: options.pointPixelSize || 6,
             color: Cesium.Color.YELLOW,
             outlineColor: Cesium.Color.fromCssColorString(item.color),
-            outlineWidth: 2
+            outlineWidth: options.pointOutlineWidth || 2,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            id: pointId
           })
           pointCollection.add({
             position: roofPosition,
-            pixelSize: 6,
+            pixelSize: options.pointPixelSize || 6,
             color: Cesium.Color.YELLOW,
             outlineColor: Cesium.Color.fromCssColorString(item.color),
-            outlineWidth: 2
+            outlineWidth: options.pointOutlineWidth || 2,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            id: pointId
           })
         }
       }
@@ -227,7 +232,7 @@ export const geometryBuildMethods = {
       const geometry = new Cesium.GroundPolylineGeometry({
         vertexFormat,
         positions: Cesium.Cartesian3.fromDegreesArray(item.pos.flat(2)),
-        width: 3
+        width: options.lineWidth || 3
       })
 
       if (pointCollection != null) {
@@ -236,10 +241,11 @@ export const geometryBuildMethods = {
           const position = Cesium.Cartesian3.fromDegrees(point[0], point[1], item.heights[pointIndex])
           pointCollection.add({
             position,
-            pixelSize: 6,
+            pixelSize: options.pointPixelSize || 6,
             color: Cesium.Color.YELLOW,
             outlineColor: Cesium.Color.fromCssColorString(item.color),
-            outlineWidth: 2,
+            outlineWidth: options.pointOutlineWidth || 2,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
             id: `${pointIndex}_${item.id}`
           })
         }
