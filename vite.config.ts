@@ -19,6 +19,9 @@ const cesiumCommonJsDeps = [
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages serves project sites from /<repository>/ instead of the domain root.
+  // Keep the local development default at / and let CI provide BASE_PATH.
+  base: process.env.BASE_PATH || '/',
   plugins: [vue(), cesium()],
   resolve: {
     alias: {
