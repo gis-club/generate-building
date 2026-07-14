@@ -2,6 +2,10 @@
  * SAM 掩码追踪工具：负责 RLE 解码、SVG 轮廓提取与坐标转换。
  */
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface MaskTraceRecovered extends RecoveredRuntimeContext {}
+
 export class MaskTraceRecovered {
   getLineBreakpoints(encoded, width) {
     const breakpoints = []
@@ -493,7 +497,7 @@ export class MaskTraceRecovered {
   }
 
   unique2DArray(arrays) {
-    const set = new Set()
+    const set = new Set<string>()
     for (const item of arrays) {
       set.add(JSON.stringify(item))
     }

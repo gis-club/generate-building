@@ -2,7 +2,9 @@
  * 测量标签、角度标签与坐标辅助转换逻辑。
  */
 
-export const measureLabelMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const measureLabelMethods = defineRecoveredMethods({
   addLabel(position, value, type) {
     let text = ''
     if (type === '娴嬭窛' || type === '鍚堣') {
@@ -186,7 +188,7 @@ export const measureLabelMethods = {
 
     return { midPoint: midpoint, distance }
   }
-}
+})
 
 export default measureLabelMethods
 

@@ -4,6 +4,10 @@
   GEManageRecovered
 } from '../mbs-sdk-exports-core.ts'
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface GEPickRecovered extends RecoveredRuntimeContext {}
+
 export class GEPickRecovered {
   constructor() {}
 

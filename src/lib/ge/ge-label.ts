@@ -1,5 +1,9 @@
 ﻿import GEManageRecovered from './ge-manage.ts'
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface GELabelRecovered extends RecoveredRuntimeContext {}
+
 export class GELabelRecovered {
   constructor() {}
 
@@ -85,7 +89,7 @@ export class GELabelRecovered {
     this.GEManage.addPrimitive(`mbs-guideline_${collectionId}`, primitive, 'PrimitiveCollection')
   }
 
-  polylinePrimitive(collectionName, id, positions, color, width, materialConfig) {
+  polylinePrimitive(collectionName, id, positions, color, width, materialConfig = null) {
     let vertexFormat
     let appearance
 
@@ -159,7 +163,7 @@ export class GELabelRecovered {
   }
 
   addBillboardSon(viewer, collectionId, id, position, image, text, scale, offset, rotation, scaleByDistance) {
-    const billboard = {
+    const billboard: RecoveredRuntimeContext = {
       position: Cesium.Cartesian3.fromDegrees(position.x, position.y, position.z),
       id,
       image,
@@ -183,7 +187,18 @@ export class GELabelRecovered {
     )
   }
 
-  addLabelSon(viewer, collectionId, id, position, icon, text) {
+  addLabelSon(
+    viewer,
+    collectionId,
+    id,
+    position,
+    icon,
+    text,
+    scale = 1,
+    offset = [0, 0],
+    rotation = 0,
+    scaleByDistance = null
+  ) {
     const label = {
       id,
       position: Cesium.Cartesian3.fromDegrees(position.x, position.y, position.z),
@@ -193,10 +208,10 @@ export class GELabelRecovered {
       showBackground: true,
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
       horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-      pixelOffset: new Cesium.Cartesian2(0, 0),
+      pixelOffset: new Cesium.Cartesian2(offset[0] || 0, offset[1] || 0),
       backgroundColor: Cesium.Color.BLACK.withAlpha(0.5),
       backgroundPadding: new Cesium.Cartesian2(12, 6),
-      scale: 1,
+      scale,
       outlineColor: Cesium.Color.WHITE.withAlpha(1),
       outlineWidth: 1,
       style: Cesium.LabelStyle.FILL_AND_OUTLINE

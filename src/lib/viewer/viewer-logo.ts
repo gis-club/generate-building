@@ -5,7 +5,9 @@
 const DEFAULT_LOGO_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg=='
 
-export const viewerLogoMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const viewerLogoMethods = defineRecoveredMethods({
   addLogo(viewer) {
     const textImage = this.drawLogo()
     const logoImage = DEFAULT_LOGO_DATA_URL
@@ -76,8 +78,8 @@ export const viewerLogoMethods = {
     context.textBaseline = 'middle'
 
     const gradient = context.createLinearGradient(0, 0, canvas.width, 0)
-    gradient.addColorStop('0', '#42d392')
-    gradient.addColorStop('1.0', '#647eff')
+    gradient.addColorStop(0, '#42d392')
+    gradient.addColorStop(1, '#647eff')
 
     context.fillStyle = gradient
     context.strokeStyle = 'rgba(0, 255, 0, 0.7)'
@@ -90,7 +92,7 @@ export const viewerLogoMethods = {
     image.src = canvas.toDataURL('image/png')
     return image
   }
-}
+})
 
 export default viewerLogoMethods
 

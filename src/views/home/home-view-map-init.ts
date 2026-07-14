@@ -40,11 +40,12 @@ function bindWidgetButton(vm, title, handler) {
 }
 
 function bindImportFileHandler(vm) {
-  const fileInput = document.getElementById('fileInput')
+  const fileInput = document.getElementById('fileInput') as HTMLInputElement | null
   if (!fileInput) return
 
   fileInput.addEventListener('change', function (event) {
-    const file = event.target.files[0]
+    const target = event.currentTarget as HTMLInputElement
+    const file = target.files?.[0]
 
     if (!file) {
       alert('上传的文件为空')
@@ -60,6 +61,7 @@ function bindImportFileHandler(vm) {
     const reader = new FileReader()
     reader.onload = function (loadEvent) {
       try {
+        if (typeof loadEvent.target?.result !== 'string') return
         const json = JSON.parse(loadEvent.target.result)
         vm.finalData = vm.convertDefaultJson(json)
         vm.highlightButton('预览模型')
@@ -101,7 +103,9 @@ function addPreviewBaseLayer(viewer) {
   return imagery
 }
 
-export const homeViewMapInitMethods = {
+import { defineRecoveredMethods } from '../../lib/recovered-sdk-types.ts'
+
+export const homeViewMapInitMethods = defineRecoveredMethods({
   /**
    * 页面地图总入口。
    * 在主视图 DOM 准备好后依次初始化地图、工具条、点击事件和窗口尺寸监听。
@@ -155,7 +159,7 @@ export const homeViewMapInitMethods = {
     })
   },
   resizePanel() {
-    const panel = document.getElementsByClassName('tool-panel')[0]
+    const panel = document.querySelector<HTMLElement>('.tool-panel')
     if (panel) {
       panel.style.height = window.innerHeight - 45 + 'px'
     }
@@ -164,13 +168,13 @@ export const homeViewMapInitMethods = {
     const syncHeight = () => {
       const map = document.getElementById('map')
       const threeContainer = document.getElementById('threeContainer')
-      const toolPanel = document.getElementsByClassName('tool-panel')[0]
+      const toolPanel = document.querySelector<HTMLElement>('.tool-panel')
 
       if (map) map.style.height = window.innerHeight + 'px'
       if (threeContainer) threeContainer.style.height = window.innerHeight + 'px'
       if (toolPanel) toolPanel.style.height = window.innerHeight - 45 + 'px'
 
-      const loadingText = document.querySelector('#loading-sam span')
+      const loadingText = document.querySelector<HTMLElement>('#loading-sam span')
       if (loadingText) {
         loadingText.style.lineHeight = window.innerHeight + 'px'
       }
@@ -397,6 +401,6 @@ export const homeViewMapInitMethods = {
       myViewer.updateViewer({ globeFlag: false, backGroundColor: '#f5f5f5' })
     }
   }
-}
+})
 
 

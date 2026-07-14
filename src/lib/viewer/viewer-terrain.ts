@@ -2,7 +2,9 @@
  * 自定义地形相关辅助方法。
  */
 
-export const viewerTerrainMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const viewerTerrainMethods = defineRecoveredMethods({
   noiseTerrainProvider(viewer) {
     const terrainProvider = new Cesium.CustomHeightmapTerrainProvider({
       width: 32,
@@ -104,7 +106,7 @@ export const viewerTerrainMethods = {
 
     viewer.terrainProvider = terrainProvider
   }
-}
+})
 
 export default viewerTerrainMethods
 

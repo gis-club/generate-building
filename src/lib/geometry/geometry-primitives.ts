@@ -3,8 +3,9 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
 
-export const geometryPrimitiveMethods = {
+export const geometryPrimitiveMethods = defineRecoveredMethods({
   constructor() {},
 
   box(options) {
@@ -141,7 +142,7 @@ export const geometryPrimitiveMethods = {
       shadows
     })
   }
-}
+})
 
 export default geometryPrimitiveMethods
 

@@ -11,6 +11,7 @@
  * 从而避免浏览器直接请求第三方接口时触发 CORS 限制。
  */
 import { MaskTraceRecovered } from '../mbs-sdk-exports-core.ts'
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
 
 const SAM_PROXY_ENDPOINT = '/sam-api/automatic_masks'
 
@@ -27,7 +28,7 @@ async function requestSamAutomaticMasks(blob) {
   return response.json()
 }
 
-export const samRequestMethods = {
+export const samRequestMethods = defineRecoveredMethods({
   constructor(options) {
     this.viewer = options.viewer.viewer
     this.data = options.data
@@ -125,7 +126,7 @@ export const samRequestMethods = {
       console.error(error)
     }
   }
-}
+})
 
 export default samRequestMethods
 

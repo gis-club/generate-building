@@ -5,6 +5,10 @@ const BAIDU_ROAD_URL =
 const BAIDU_SATELLITE_URL =
   'https://maponline3.bdimg.com/tile/?qt=vtile&x={x}&y={y}&z={z}&styles=sl&scaler=1&udt='
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface LayerRecovered extends RecoveredRuntimeContext {}
+
 export class LayerRecovered {
   constructor() {}
 

@@ -2,7 +2,9 @@
  * Viewer 相机与坐标换算能力。
  */
 
-export const viewerCameraMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const viewerCameraMethods = defineRecoveredMethods({
   locationCenter(options) {
     const viewer = this.viewer
     if (options.pos[2] == null) {
@@ -110,7 +112,7 @@ export const viewerCameraMethods = {
   formLonLat(lonlat) {
     return Cesium.Cartesian3.fromDegrees(lonlat[0], lonlat[1], lonlat[2])
   }
-}
+})
 
 export default viewerCameraMethods
 

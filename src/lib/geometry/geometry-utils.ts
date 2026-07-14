@@ -1,4 +1,6 @@
-export const geometryUtilsMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const geometryUtilsMethods = defineRecoveredMethods({
   getRandomHexColor() {
     const red = Math.floor(Math.random() * 256).toString(16)
     const green = Math.floor(Math.random() * 256).toString(16)
@@ -41,6 +43,6 @@ export const geometryUtilsMethods = {
     const blue = parseInt(value.slice(4, 6), 16)
     return new Cesium.Color(red / 255, green / 255, blue / 255, alpha)
   }
-}
+})
 
 export default geometryUtilsMethods

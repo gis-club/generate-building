@@ -6,6 +6,7 @@ import {
   MaskTraceRecovered,
   GeometryRecovered
 } from '../mbs-sdk-exports-core.ts'
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
 
 const MIN_BUILDING_MASK_AREA_RATIO = 0.0002
 const MAX_BUILDING_MASK_AREA_RATIO = 0.18
@@ -38,7 +39,7 @@ function isPlausibleBuildingRegion(tracer, svgPath, imageWidth, imageHeight) {
   return spanX <= MAX_BUILDING_MASK_SPAN_RATIO && spanY <= MAX_BUILDING_MASK_SPAN_RATIO
 }
 
-export const samRenderMethods = {
+export const samRenderMethods = defineRecoveredMethods({
   handleAllModelResults(results, imageWidth, imageHeight, context) {
     const tracer = new MaskTraceRecovered()
     const polygons = results
@@ -131,7 +132,7 @@ export const samRenderMethods = {
     const blob = await (await fetch(url)).blob()
     return new File([blob], 'image.jpeg')
   }
-}
+})
 
 export default samRenderMethods
 
