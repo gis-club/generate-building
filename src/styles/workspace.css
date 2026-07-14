@@ -390,45 +390,6 @@ body,
   display: none !important;
 }
 
-@media (max-width: 1280px) {
-  .left-toolbar,
-  .right-toolbar,
-  .top-info,
-  .side-dialog {
-    left: 20px;
-    right: 20px;
-    width: auto;
-  }
-
-  .left-toolbar {
-    top: 20px;
-    bottom: auto;
-    width: calc(100% - 40px);
-    max-height: 320px;
-  }
-
-  .top-info,
-  .side-dialog {
-    top: 500px;
-  }
-
-  .right-toolbar {
-    top: 640px;
-  }
-}
-
-@media (max-width: 960px) {
-  .home-view {
-    overflow-y: auto;
-  }
-
-  .right-toolbar__stats,
-  .help-columns {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-}
-
 /*
  * Professional GIS workbench skin.
  *
@@ -1817,12 +1778,34 @@ body,
 /* Element Plus component integration ------------------------------------- */
 
 .studio-rail .el-button > span {
+  display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 3px;
 }
 
 .studio-rail .el-button > span > span {
   font-size: 9px;
+}
+
+.home-view .studio-rail .el-button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #91a0b4;
+}
+
+.home-view .studio-rail .el-button:hover {
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #dce5f1;
+}
+
+.home-view .studio-rail .el-button.is-active {
+  background: rgba(36, 107, 253, 0.15);
+  color: #76a6ff;
 }
 
 .studio-sidebar__tabs.el-segmented {
@@ -1866,7 +1849,9 @@ body,
   width: 100%;
   height: auto;
   min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
+  justify-content: flex-start;
   gap: 9px;
   border: 0;
   background: transparent;
@@ -1890,6 +1875,11 @@ body,
 .el-button.studio-tool-row > span > span:nth-child(2) {
   min-width: 0;
   flex: 1;
+  text-align: left;
+}
+
+.el-button.studio-tool-row > span > kbd {
+  flex: 0 0 auto;
 }
 
 .home-view .el-button.studio-action-row:hover,
@@ -1908,6 +1898,16 @@ body,
 .el-button.studio-tool-row--ai > span > span:first-child {
   border-color: #d9d3ff;
   color: #6f5bd3;
+}
+
+.studio-recent-grid .el-button > span {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .right-toolbar__stats .el-statistic {
