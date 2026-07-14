@@ -41,6 +41,12 @@ function createPreviewMockFinalData() {
   ]
 }
 
+import {
+  getActiveVisionModelKey,
+  loadVisionProviders,
+  VISION_PROVIDER_TEMPLATES
+} from '../../lib/ai/vision-provider-registry.ts'
+
 /**
  * 首页状态工厂。
  * 所有页面响应式字段都从这里集中生成，便于后续迁移到组合式 API 时统一梳理。
@@ -102,6 +108,13 @@ export function createHomeViewRecoveredData() {
     suppressNextVertexInsert: false,
     aiRunning: false,
     aiError: '',
+    aiProviderDialogVisible: false,
+    aiProviders: loadVisionProviders(),
+    aiProviderTemplates: VISION_PROVIDER_TEMPLATES,
+    aiNewProviderTemplate: 'openai',
+    aiActiveModelKey: getActiveVisionModelKey(),
+    aiMaxBuildings: 30,
+    aiProviderBusyId: '',
     samMinHeightResult: [],
     sceneFlag: true,
     homePos: { pos: [113.73, 34.77], heading: 0, pitch: -90, distance: 4000 },

@@ -325,7 +325,7 @@ export const homeViewMapInitMethods = {
       this.fold(this.allPanelShow)
       this.allPanelShow = !this.allPanelShow
     })
-    bindWidgetButton(this, 'AI辅助', () => this.useSAM())
+    bindWidgetButton(this, 'AI辅助', () => this.useActiveAIModel())
     bindWidgetButton(this, '导入geojson', () => {
       const fileInput = document.getElementById('fileInput')
       if (fileInput) fileInput.click()

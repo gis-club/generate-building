@@ -242,6 +242,30 @@
 
           <section v-show="matchesSearch('AI 智能 建筑识别')" class="studio-section">
             <div class="studio-section__heading"><span>智能处理</span><small>Beta</small></div>
+            <div class="studio-ai-model-picker">
+              <el-select
+                v-model="aiActiveModelKey"
+                size="small"
+                placeholder="选择视觉模型"
+                @change="onActiveAIModelChange"
+              >
+                <el-option-group
+                  v-for="provider in aiProviders.filter((item) => item.enabled)"
+                  :key="provider.id"
+                  :label="provider.name"
+                >
+                  <el-option
+                    v-for="model in provider.models.filter((item) => item.enabled && item.vision)"
+                    :key="`${provider.id}::${model.id}`"
+                    :label="model.name || model.id"
+                    :value="`${provider.id}::${model.id}`"
+                  />
+                </el-option-group>
+              </el-select>
+              <button title="管理模型供应商" @click="openAIProviderManager">
+                <el-icon><Setting /></el-icon>
+              </button>
+            </div>
             <button class="studio-tool-row studio-tool-row--ai" :class="{ 'is-active': aiRunning }" @click="handleAIAssist">
               <span><el-icon><MagicStick /></el-icon></span><div><strong>{{ aiRunning ? 'AI 识别中' : 'AI 建筑识别' }}</strong><small>从影像提取建筑轮廓</small></div>
             </button>
@@ -520,6 +544,149 @@
         </div>
       </div>
     </aside>
+
+    <el-dialog
+      v-model="aiProviderDialogVisible"
+      title="AI 模型供应商"
+      width="min(980px, 94vw)"
+      class="ai-provider-dialog"
+      append-to-body
+      destroy-on-close
+      @closed="saveAIProviderSettings(false)"
+    >
+      <div class="ai-provider-intro">
+        <div>
+          <strong>像 Dify 一样管理供应商与模型</strong>
+          <p>一个供应商可配置多个模型；建筑识别只调用当前选中的视觉模型。</p>
+        </div>
+        <el-tag type="warning" effect="plain">浏览器直连</el-tag>
+      </div>
+
+      <div class="ai-provider-addbar">
+        <el-select v-model="aiNewProviderTemplate" filterable>
+          <el-option
+            v-for="template in aiProviderTemplates"
+            :key="template.id"
+            :label="template.name"
+            :value="template.id"
+          />
+        </el-select>
+        <el-button type="primary" @click="addAIProvider"><el-icon><Plus /></el-icon>新增供应商</el-button>
+      </div>
+
+      <div class="ai-provider-list">
+        <article
+          v-for="provider in aiProviders"
+          :id="`ai-provider-${provider.id}`"
+          :key="provider.id"
+          class="ai-provider-card"
+          :class="{ 'is-disabled': !provider.enabled }"
+        >
+          <header>
+            <div class="ai-provider-card__identity">
+              <span><el-icon><MagicStick /></el-icon></span>
+              <div>
+                <el-input v-model="provider.name" :disabled="provider.builtin" @change="saveAIProviderSettings(false)" />
+                <small>{{ provider.protocol }}</small>
+              </div>
+            </div>
+            <div class="ai-provider-card__header-actions">
+              <el-switch v-model="provider.enabled" @change="saveAIProviderSettings(false)" />
+              <el-button v-if="!provider.builtin" text type="danger" @click="removeAIProvider(provider)">
+                <el-icon><Delete /></el-icon>
+              </el-button>
+            </div>
+          </header>
+
+          <template v-if="provider.protocol !== 'local-sam'">
+            <div class="ai-provider-form-grid">
+              <label>
+                <span>接口协议</span>
+                <el-select v-model="provider.protocol" @change="saveAIProviderSettings(false)">
+                  <el-option label="OpenAI Responses" value="openai-responses" />
+                  <el-option label="OpenAI Compatible / Chat Completions" value="openai-compatible" />
+                  <el-option label="Anthropic Messages" value="anthropic" />
+                  <el-option label="Google Gemini" value="gemini" />
+                  <el-option label="Azure OpenAI" value="azure-openai" />
+                </el-select>
+              </label>
+              <label>
+                <span>API Endpoint</span>
+                <el-input v-model="provider.baseUrl" placeholder="https://api.example.com/v1" @change="saveAIProviderSettings(false)" />
+              </label>
+              <label>
+                <span>API Key</span>
+                <el-input v-model="provider.apiKey" type="password" show-password placeholder="sk-..." @change="saveAIProviderSettings(false)" />
+              </label>
+              <label class="ai-provider-remember">
+                <span>密钥存储</span>
+                <el-checkbox v-model="provider.rememberApiKey" @change="saveAIProviderSettings(false)">
+                  长期保存在此浏览器
+                </el-checkbox>
+              </label>
+              <label class="ai-provider-headers">
+                <span>自定义请求头（JSON，可选）</span>
+                <el-input
+                  v-model="provider.headersText"
+                  type="textarea"
+                  :rows="2"
+                  placeholder='{"X-Project-ID":"..."}'
+                  @change="saveAIProviderSettings(false)"
+                />
+              </label>
+            </div>
+
+            <div class="ai-provider-actions">
+              <el-button
+                :loading="aiProviderBusyId === provider.id"
+                :disabled="Boolean(aiProviderBusyId)"
+                @click="testAIProvider(provider)"
+              >测试连接</el-button>
+              <el-button
+                :loading="aiProviderBusyId === provider.id"
+                :disabled="Boolean(aiProviderBusyId)"
+                @click="discoverAIModels(provider)"
+              >获取模型</el-button>
+            </div>
+          </template>
+
+          <div class="ai-model-list">
+            <div class="ai-model-list__heading">
+              <span>模型目录 <b>{{ provider.models.length }}</b></span>
+              <el-button v-if="!provider.builtin" text type="primary" @click="addAIModel(provider)">
+                <el-icon><Plus /></el-icon>手动添加模型
+              </el-button>
+            </div>
+            <div v-if="provider.models.length" class="ai-model-table">
+              <div class="ai-model-table__head"><span>当前</span><span>模型 ID</span><span>显示名称</span><span>视觉</span><span>启用</span><span /></div>
+              <div v-for="(model, modelIndex) in provider.models" :key="`${provider.id}-${modelIndex}`" class="ai-model-row">
+                <el-radio v-model="aiActiveModelKey" :label="`${provider.id}::${model.id}`" :disabled="!provider.enabled || !model.enabled || !model.id" @change="onActiveAIModelChange"><span /></el-radio>
+                <el-input v-model="model.id" placeholder="model-id" :disabled="provider.builtin" @change="saveAIProviderSettings(false)" />
+                <el-input v-model="model.name" placeholder="显示名称" :disabled="provider.builtin" @change="saveAIProviderSettings(false)" />
+                <el-switch v-model="model.vision" :disabled="provider.builtin" @change="saveAIProviderSettings(false)" />
+                <el-switch v-model="model.enabled" :disabled="provider.builtin" @change="saveAIProviderSettings(false)" />
+                <el-button v-if="!provider.builtin" text type="danger" @click="removeAIModel(provider, modelIndex)"><el-icon><Delete /></el-icon></el-button>
+              </div>
+            </div>
+            <div v-else class="ai-model-empty">还没有模型，可在线获取或手动添加模型 ID。</div>
+          </div>
+        </article>
+      </div>
+
+      <div class="ai-provider-security">
+        API Key 默认仅保存在当前标签会话；勾选“长期保存”后才写入 localStorage。纯前端直连可能受供应商 CORS 限制，生产环境建议通过自己的后端网关转发并保管密钥。
+      </div>
+
+      <template #footer>
+        <div class="ai-provider-footer">
+          <label>最多识别 <el-input-number v-model="aiMaxBuildings" :min="1" :max="100" size="small" /> 个建筑</label>
+          <div>
+            <el-button @click="aiProviderDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveAIProviderSettings(); aiProviderDialogVisible = false">保存配置</el-button>
+          </div>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -550,6 +717,7 @@ import {
   View
 } from '@element-plus/icons-vue'
 import homeViewOptions from './HomeView.logic.ts'
+import { listActiveVisionModels } from '../lib/ai/vision-provider-registry.ts'
 
 /**
  * 读取组合后的基础状态工厂。
@@ -599,6 +767,12 @@ export default {
     }
   },
   computed: {
+    aiModelOptions() {
+      return listActiveVisionModels(this.aiProviders || [])
+    },
+    activeAIModelLabel() {
+      return this.aiModelOptions.find((item) => item.key === this.aiActiveModelKey)?.modelName || '未选择模型'
+    },
     pointCount() {
       if (!Array.isArray(this.finalData)) return 0
       return this.finalData.reduce((total, item) => total + Math.max((item.lonlats?.length || 1) - 1, 0), 0)
@@ -734,7 +908,7 @@ export default {
       this.closeFloatPanels()
       this.leftShow1 = false
       this.leftShow2 = false
-      this.useSAM?.()
+      this.useActiveAIModel?.()
     },
     /**
      * 一键折叠/展开右侧所有几何配置卡片。

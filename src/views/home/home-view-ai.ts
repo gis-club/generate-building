@@ -1,5 +1,19 @@
 ﻿import { SAMRecovered } from './home-view-lib.ts'
 
+import {
+  addOrMergeModels,
+  createEmptyVisionModel,
+  createProviderFromTemplate,
+  resolveActiveVisionModel,
+  saveActiveVisionModelKey,
+  saveVisionProviders
+} from '../../lib/ai/vision-provider-registry.ts'
+import {
+  fetchVisionProviderModels,
+  recognizeBuildingsWithVisionModel,
+  testVisionProvider
+} from '../../lib/ai/vision-model-client.ts'
+
 /**
  * AI 辅助识别逻辑。
  * 当前流程：截取地图画面 -> 通过 Vite 代理请求 SAM -> 写入 `finalData`。
@@ -68,6 +82,191 @@ function fallbackHeights(lonlats) {
 }
 
 export const homeViewAiMethods = {
+  openAIProviderManager() {
+    this.aiProviderDialogVisible = true
+  },
+
+  saveAIProviderSettings(showMessage = true) {
+    saveVisionProviders(this.aiProviders)
+    saveActiveVisionModelKey(this.aiActiveModelKey)
+    if (showMessage) this.notify?.('AI 供应商与模型配置已保存', 'success')
+  },
+
+  addAIProvider() {
+    const provider = createProviderFromTemplate(this.aiNewProviderTemplate)
+    this.aiProviders.push(provider)
+    this.saveAIProviderSettings(false)
+    this.$nextTick?.(() => {
+      document.getElementById(`ai-provider-${provider.id}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    })
+  },
+
+  removeAIProvider(provider) {
+    if (provider?.builtin) return
+    const index = this.aiProviders.findIndex((item) => item.id === provider.id)
+    if (index < 0) return
+    this.aiProviders.splice(index, 1)
+    if (String(this.aiActiveModelKey).startsWith(`${provider.id}::`)) {
+      this.aiActiveModelKey = 'local-sam::segment-anything'
+    }
+    this.saveAIProviderSettings(false)
+  },
+
+  addAIModel(provider) {
+    provider.models.push(createEmptyVisionModel())
+  },
+
+  removeAIModel(provider, modelIndex) {
+    const model = provider.models[modelIndex]
+    provider.models.splice(modelIndex, 1)
+    if (this.aiActiveModelKey === `${provider.id}::${model?.id}`) this.aiActiveModelKey = ''
+    this.saveAIProviderSettings(false)
+  },
+
+  async discoverAIModels(provider) {
+    if (this.aiProviderBusyId) return
+    this.aiProviderBusyId = provider.id
+    try {
+      const models = await fetchVisionProviderModels(provider)
+      const added = addOrMergeModels(provider, models)
+      this.saveAIProviderSettings(false)
+      this.notify?.(`已获取 ${models.length} 个模型，新增 ${added} 个`, 'success')
+    } catch (error) {
+      this.notify?.(error?.message || '获取模型列表失败', 'error')
+    } finally {
+      this.aiProviderBusyId = ''
+    }
+  },
+
+  async testAIProvider(provider) {
+    if (this.aiProviderBusyId) return
+    this.aiProviderBusyId = provider.id
+    try {
+      await testVisionProvider(provider)
+      this.notify?.(`“${provider.name}”连接成功`, 'success')
+    } catch (error) {
+      this.notify?.(error?.message || '供应商连接失败', 'error')
+    } finally {
+      this.aiProviderBusyId = ''
+    }
+  },
+
+  onActiveAIModelChange() {
+    saveActiveVisionModelKey(this.aiActiveModelKey)
+  },
+
+  async useActiveAIModel() {
+    if (this.aiRunning) return
+    const active = resolveActiveVisionModel(this.aiProviders, this.aiActiveModelKey)
+    if (!active) {
+      this.aiProviderDialogVisible = true
+      this.notify?.('请先启用并选择一个视觉模型', 'warning')
+      return
+    }
+
+    if (active.provider.protocol === 'local-sam') {
+      await this.useSAM()
+      return
+    }
+
+    if (!window.myViewer?.viewer?.scene?.canvas) {
+      this.notify?.('地图尚未初始化，无法进行 AI 辅助', 'warning')
+      return
+    }
+    if (this.drawingActive) this.cancelCurrentDrawing?.(true)
+
+    this.aiRunning = true
+    this.aiError = ''
+    try {
+      const viewer = window.myViewer.viewer
+      viewer.render()
+      const canvas = viewer.scene.canvas
+      const imageDataUrl = canvas.toDataURL('image/png')
+      const outlines = await recognizeBuildingsWithVisionModel(active.provider, active.model, {
+        imageDataUrl,
+        maxBuildings: this.aiMaxBuildings
+      })
+      const lonlats = this.normalizedOutlinesToLonlats(outlines, canvas)
+      if (!lonlats.length) {
+        throw new Error('识别轮廓未能投影到当前地图，请确认画面中心位于地球表面')
+      }
+      await this.appendAIRecognizedBuildings(lonlats, active.model.name || active.model.id)
+    } catch (error) {
+      console.error('vision model assist failed:', error)
+      this.aiError = error?.message || 'AI识别失败'
+      this.notify?.(this.aiError, 'error')
+    } finally {
+      this.aiRunning = false
+    }
+  },
+
+  normalizedOutlinesToLonlats(outlines, canvas) {
+    const viewer = window.myViewer?.viewer
+    if (!viewer || !Array.isArray(outlines)) return []
+    const width = canvas.width || canvas.clientWidth
+    const height = canvas.height || canvas.clientHeight
+
+    return outlines
+      .map((outline) => {
+        const polygon = []
+        for (const point of outline.polygon || []) {
+          const screenPoint = new Cesium.Cartesian2(
+            (point[0] / 1000) * width,
+            (point[1] / 1000) * height
+          )
+          const ray = viewer.camera.getPickRay(screenPoint)
+          const picked = ray && viewer.scene.globe.pick(ray, viewer.scene)
+          if (!picked) continue
+          const cartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(picked)
+          if (!cartographic) continue
+          polygon.push([
+            toFixedNumber(Cesium.Math.toDegrees(cartographic.longitude), 6),
+            toFixedNumber(Cesium.Math.toDegrees(cartographic.latitude), 6),
+            0
+          ])
+        }
+        if (polygon.length < 3) return null
+        const first = polygon[0]
+        const last = polygon[polygon.length - 1]
+        if (first[0] !== last[0] || first[1] !== last[1]) polygon.push([...first])
+        return polygon.length >= 4 ? polygon : null
+      })
+      .filter(Boolean)
+  },
+
+  async appendAIRecognizedBuildings(lonlats, modelName = 'AI') {
+    const normalized = normalizeSamLonlats(lonlats)
+    if (!normalized.length) throw new Error('AI未识别到可用区域')
+    const minHeights = await this.getRealHeight(normalized)
+    const startId = this.currId
+
+    for (let index = 0; index < normalized.length; index += 1) {
+      this.finalData.push({
+        id: startId + index,
+        name: `${modelName}识别${startId + index + 1}`,
+        height: 0,
+        extrudeHeight: 40,
+        minHeight: minHeights[index] ?? 0,
+        style: '1',
+        color: '#ffffff',
+        lonlats: normalized[index],
+        panelShow: false
+      })
+    }
+
+    this.currId = this.finalData.length
+    this.updateAll()
+    this.notify?.(`AI识别完成，新增 ${normalized.length} 个区域`, 'success')
+    this.$nextTick(() => {
+      if (this.$refs.scrollContainer) {
+        this.$refs.scrollContainer.scrollTop = this.$refs.scrollContainer.scrollHeight
+      }
+    })
+  },
+
   /**
    * AI 辅助主入口。成功后会把识别结果追加到右侧建筑列表中。
    */
@@ -99,32 +298,7 @@ export const homeViewAiMethods = {
       })
 
       const lonlats = await this.waitForSamLonlats()
-      const minHeights = await this.getRealHeight(lonlats)
-      const startId = this.currId
-
-      for (let index = 0; index < lonlats.length; index += 1) {
-        this.finalData.push({
-          id: startId + index,
-          name: `AI识别${startId + index + 1}`,
-          height: 0,
-          extrudeHeight: 40,
-          minHeight: minHeights[index] ?? 0,
-          style: '1',
-          color: '#ffffff',
-          lonlats: lonlats[index],
-          panelShow: false
-        })
-      }
-
-      this.currId = this.finalData.length
-      this.updateAll()
-      this.notify?.(`AI识别完成，新增 ${lonlats.length} 个区域`, 'success')
-
-      this.$nextTick(() => {
-        if (this.$refs.scrollContainer) {
-          this.$refs.scrollContainer.scrollTop = this.$refs.scrollContainer.scrollHeight
-        }
-      })
+      await this.appendAIRecognizedBuildings(lonlats, 'SAM')
     } catch (error) {
       console.error('AI assist failed:', error)
       this.aiError = error?.message || 'AI识别失败'
