@@ -23,7 +23,7 @@ import HomeView from './views/HomeView.vue'
  * 当前仓库已经改造成纯 Vite + Vue + TypeScript 应用，因此默认按本地预览模式运行。
  */
 window.__MBS_RECOVERED_PREVIEW__ = true
-window.CESIUM_BASE_URL = '/cesium'
+window.CESIUM_BASE_URL = `${import.meta.env.BASE_URL}cesium`
 window.Cesium = Cesium
 window.turf = turf
 window.decomp = decomp
