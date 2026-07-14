@@ -71,6 +71,14 @@
       />
     </template>
 
+    <AIRecognitionProgress
+      :running="aiRunning"
+      :percentage="aiProgress"
+      :stage="aiProgressStage"
+      :model-label="activeAIModelLabel"
+      :started-at="aiProgressStartedAt"
+    />
+
     <WorkspaceFeedback
       :help-visible="infoShow1"
       :about-visible="infoShow2"
@@ -131,6 +139,7 @@
 
 <script lang="ts">
 import AIProviderDialog from '@/components/workspace/AIProviderDialog.vue'
+import AIRecognitionProgress from '@/components/workspace/AIRecognitionProgress.vue'
 import MapWorkspaceControls from '@/components/workspace/MapWorkspaceControls.vue'
 import ObjectInspector from '@/components/workspace/ObjectInspector.vue'
 import StudioHeader from '@/components/workspace/StudioHeader.vue'
@@ -152,6 +161,7 @@ export default {
   components: {
     ...(homeViewOptions.components || {}),
     AIProviderDialog,
+    AIRecognitionProgress,
     MapWorkspaceControls,
     ObjectInspector,
     StudioHeader,

@@ -2019,6 +2019,139 @@ body,
   line-height: 1.7;
 }
 
+/* AI recognition progress ------------------------------------------------ */
+
+.ai-recognition-progress {
+  position: absolute;
+  top: calc(var(--studio-header-height) + 16px);
+  right: calc(var(--studio-inspector-width) + 16px);
+  left: calc(var(--studio-rail-width) + var(--studio-sidebar-width) + 16px);
+  z-index: 76;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ai-recognition-progress__card.el-card {
+  width: min(520px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(124, 164, 255, 0.42);
+  border-radius: 12px;
+  background: rgba(8, 19, 36, 0.94);
+  box-shadow: 0 18px 48px rgba(3, 10, 24, 0.34);
+  color: #f7faff;
+  backdrop-filter: blur(16px);
+}
+
+.ai-recognition-progress__card .el-card__body {
+  padding: 16px 18px 14px;
+}
+
+.ai-recognition-progress__header,
+.ai-recognition-progress__title,
+.ai-recognition-progress__meta {
+  display: flex;
+  align-items: center;
+}
+
+.ai-recognition-progress__header,
+.ai-recognition-progress__meta {
+  justify-content: space-between;
+}
+
+.ai-recognition-progress__header {
+  gap: 16px;
+  margin-bottom: 13px;
+}
+
+.ai-recognition-progress__title {
+  min-width: 0;
+  gap: 10px;
+}
+
+.ai-recognition-progress__title > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.ai-recognition-progress__title strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ai-recognition-progress__title span {
+  overflow: hidden;
+  color: #8fa3bd;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-recognition-progress__spinner {
+  flex: 0 0 auto;
+  color: #73a7ff;
+  font-size: 20px;
+  animation: ai-progress-spin 1.1s linear infinite;
+}
+
+.ai-recognition-progress__percentage {
+  flex: 0 0 auto;
+  color: #8ab6ff;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-recognition-progress__card .el-progress-bar__outer {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ai-recognition-progress__card .el-progress-bar__inner {
+  background: linear-gradient(90deg, #2f6fff, #42b8ff);
+}
+
+.ai-recognition-progress__meta {
+  gap: 16px;
+  margin-top: 10px;
+  color: #dce7f7;
+  font-size: 11px;
+}
+
+.ai-recognition-progress__meta span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-recognition-progress__meta span:last-child {
+  flex: 0 0 auto;
+  color: #8fa3bd;
+  font-variant-numeric: tabular-nums;
+}
+
+.ai-recognition-progress__card p {
+  margin: 7px 0 0;
+  color: #788ca7;
+  font-size: 9px;
+}
+
+.ai-progress-enter-active,
+.ai-progress-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.ai-progress-enter-from,
+.ai-progress-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@keyframes ai-progress-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 1380px) {
   .home-view {
     --studio-sidebar-width: 268px;
@@ -2086,5 +2219,14 @@ body,
     right: 12px;
     left: 12px;
     width: auto;
+  }
+
+  .ai-recognition-progress {
+    right: 10px;
+    left: calc(var(--studio-rail-width) + var(--studio-sidebar-width) + 10px);
+  }
+
+  .ai-recognition-progress__card .el-card__body {
+    padding: 13px 14px 12px;
   }
 }
