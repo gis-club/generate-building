@@ -16,7 +16,7 @@ import * as turf from '@turf/turf'
 import * as decomp from 'poly-decomp'
 import LZString from 'lz-string'
 import proj4 from 'proj4'
-import HomeView from './views/HomeView.vue'
+import App from './App.vue'
 
 /**
  * 兼容旧项目中使用的全局预览标记。
@@ -63,6 +63,6 @@ window.Mx =
       message: options.title ? `${options.title}: ${options.message}` : options.message || ''
     }))
 
-const app = createApp(HomeView)
+const app = createApp(App)
 app.use(ElementPlus)
 app.mount('#app')

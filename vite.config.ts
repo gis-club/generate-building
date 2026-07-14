@@ -21,10 +21,11 @@ const cesiumCommonJsDeps = [
 export default defineConfig({
   // GitHub Pages serves project sites from /<repository>/ instead of the domain root.
   // Keep the local development default at / and let CI provide BASE_PATH.
-  base: process.env.BASE_PATH || '/',
+  base: process.env.BASE_PATH || '',
   plugins: [vue(), cesium()],
   resolve: {
     alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@zip.js/zip.js/lib/zip-no-worker.js': fileURLToPath(
         new URL('./node_modules/@zip.js/zip.js/index.js', import.meta.url),
       ),
@@ -37,7 +38,7 @@ export default defineConfig({
   },
   server: {
     host: '127.0.0.1',
-    port: 5176,
+    port: 5006,
     strictPort: true,
     proxy: {
       '/sam-api': {

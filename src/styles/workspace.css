@@ -1,8 +1,439 @@
+/* Workspace-level styles shared by the view's presentational components. */
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.home-view {
+  --home-text: #f7f9ff;
+  --home-text-muted: #aebbd8;
+  --home-panel: rgba(8, 16, 30, 0.78);
+  --home-panel-soft: rgba(255, 255, 255, 0.05);
+  --home-panel-border: rgba(255, 255, 255, 0.08);
+  --home-accent: #74dbc8;
+  --home-accent-strong: #7d8eff;
+  --home-shadow: 0 28px 60px rgba(0, 0, 0, 0.26);
+  --el-color-primary: #7d8eff;
+  --el-text-color-primary: #f7f9ff;
+  --el-text-color-regular: #dbe3f7;
+  --el-text-color-secondary: #aebbd8;
+  --el-border-color: rgba(255, 255, 255, 0.1);
+  --el-border-color-light: rgba(255, 255, 255, 0.08);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.06);
+  --el-fill-color-blank: rgba(255, 255, 255, 0.05);
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(73, 210, 183, 0.14), transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(125, 142, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #07111f 0%, #091628 56%, #0a1831 100%);
+  color: var(--home-text);
+  font-family: Inter, 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+
+.home-view__ambient,
+.home-view__mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.home-view__ambient {
+  filter: blur(90px);
+}
+
+.home-view__ambient--teal {
+  top: -8%;
+  left: -10%;
+  width: 34vw;
+  height: 34vw;
+  background: radial-gradient(circle, rgba(73, 210, 183, 0.42), transparent 70%);
+}
+
+.home-view__ambient--violet {
+  top: 8%;
+  right: -6%;
+  width: 28vw;
+  height: 28vw;
+  background: radial-gradient(circle, rgba(125, 142, 255, 0.32), transparent 70%);
+}
+
+.home-view__mesh {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 74%);
+}
+
+.map-layer,
+.model-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.model-layer {
+  pointer-events: none;
+}
+
+.left-toolbar {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  padding: 18px 14px;
+  overflow-y: auto;
+  border: 1px solid var(--home-panel-border);
+  border-radius: 28px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
+}
+
+.right-toolbar__eyebrow {
+  color: var(--home-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.top-info,
+.side-dialog {
+  position: absolute;
+  z-index: 40;
+  width: 400px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--home-panel-border);
+  background: rgba(8, 16, 30, 0.86);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
+}
+
+.top-info {
+  top: 148px;
+  left: 268px;
+}
+
+.top-info--warning {
+  right: 24px;
+  left: auto;
+  width: 360px;
+}
+
+.side-dialog {
+  top: 148px;
+  left: 268px;
+  width: 430px;
+}
+
+.top-info .top,
+.side-dialog .top {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(116, 219, 200, 0.24), rgba(125, 142, 255, 0.28));
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.top-info .bottom,
+.side-dialog .bottom {
+  padding: 20px;
+  color: var(--home-text);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.help-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.help-column p,
+.top-info .bottom p {
+  margin: 0 0 8px;
+}
+
+.price-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 14px;
+  list-style: none;
+}
+
+.price-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 700;
+}
+
+.right-toolbar {
+  position: absolute;
+  top: 148px;
+  right: 24px;
+  z-index: 26;
+  width: 340px;
+  padding: 18px 18px 40px;
+  overflow-y: auto;
+  border: 1px solid var(--home-panel-border);
+  border-radius: 28px;
+  background: var(--home-panel);
+  box-shadow: var(--home-shadow);
+  backdrop-filter: blur(20px);
+}
+
+.right-toolbar__header,
+.right-toolbar__title,
+.right-toolbar__stats,
+.geometry-card__title-copy,
+.tool-content__head,
+.params-row__color {
+  display: flex;
+}
+
+.right-toolbar__header,
+.tool-content__head {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.right-toolbar__header {
+  margin-bottom: 14px;
+}
+
+.right-toolbar__title {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.right-toolbar__title strong {
+  font-size: 20px;
+}
+
+.right-toolbar__toggle {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--home-text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.right-toolbar__stats {
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.geometry-card {
+  margin-bottom: 14px;
+}
+
+.geometry-card__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--home-text);
+  cursor: pointer;
+}
+
+.geometry-card__title-copy {
+  align-items: center;
+  gap: 12px;
+}
+
+.geometry-card__title-copy strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.geometry-card__title-copy small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.geometry-card__serial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.geometry-card__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 14px;
+  background: #ff5b2e;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.geometry-card__body {
+  margin-top: 12px;
+}
+
+.tool-content {
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.tool-content__tag {
+  display: inline-block;
+  margin: 0;
+  color: var(--home-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tool-content__meta {
+  color: var(--home-text-muted);
+  font-size: 12px;
+}
+
+.tool-content--params {
+  padding-bottom: 6px;
+}
+
+.params-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--home-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.params-row__color {
+  align-items: center;
+  gap: 10px;
+}
+
+.color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+.params-row .el-input-number {
+  width: 126px;
+}
+
+.form-actions .el-form-item__content {
+  justify-content: flex-end;
+}
+
+.home-view .el-input__wrapper,
+.home-view .el-input-number,
+.home-view .el-color-picker__trigger {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.home-view .el-input-group__prepend {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--home-text-muted);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.home-view .el-form-item__label {
+  color: var(--home-text-muted);
+}
+
+.home-view .el-button:not(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: var(--home-text);
+}
+
+#mbs-widget1,
+#mbs-widget {
+  display: none !important;
+}
+
+@media (max-width: 1280px) {
+  .left-toolbar,
+  .right-toolbar,
+  .top-info,
+  .side-dialog {
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  .left-toolbar {
+    top: 20px;
+    bottom: auto;
+    width: calc(100% - 40px);
+    max-height: 320px;
+  }
+
+  .top-info,
+  .side-dialog {
+    top: 500px;
+  }
+
+  .right-toolbar {
+    top: 640px;
+  }
+}
+
+@media (max-width: 960px) {
+  .home-view {
+    overflow-y: auto;
+  }
+
+  .right-toolbar__stats,
+  .help-columns {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
 /*
  * Professional GIS workbench skin.
  *
- * The legacy component keeps the Cesium/Three business logic intact while this
- * layer reorganizes the visible hierarchy around a familiar desktop-GIS model:
+ * The workspace components keep the Cesium/Three canvas independent from the
+ * application chrome and follow a familiar desktop-GIS hierarchy:
  * command header, activity rail, searchable layer/tool pane, map canvas,
  * contextual inspector and a persistent spatial status bar.
  */
@@ -969,24 +1400,6 @@
   margin-bottom: 12px;
 }
 
-.right-stat-card {
-  padding: 9px;
-  border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: var(--studio-surface-muted);
-}
-
-.right-stat-card span {
-  margin-bottom: 4px;
-  color: var(--studio-text-subtle);
-  font-size: 8px;
-}
-
-.right-stat-card strong {
-  color: var(--studio-text);
-  font-size: 14px;
-}
-
 .inspector-empty {
   display: flex;
   align-items: center;
@@ -1399,6 +1812,175 @@
   .ai-model-row > :nth-child(5) {
     display: none;
   }
+}
+
+/* Element Plus component integration ------------------------------------- */
+
+.studio-rail .el-button > span {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.studio-rail .el-button > span > span {
+  font-size: 9px;
+}
+
+.studio-sidebar__tabs.el-segmented {
+  --el-segmented-item-selected-bg-color: #ffffff;
+  --el-segmented-item-selected-color: var(--studio-text);
+  display: flex;
+}
+
+.studio-sidebar__tabs .el-segmented__group {
+  width: 100%;
+}
+
+.studio-sidebar__tabs .el-segmented__item {
+  min-height: 29px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.studio-search.el-input {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.studio-search .el-input__wrapper {
+  min-height: 34px;
+  border-radius: 7px;
+}
+
+.home-view .el-button.studio-action-row,
+.home-view .el-button.studio-tool-row {
+  justify-content: flex-start;
+  border-color: transparent;
+  background: transparent;
+}
+
+.el-button.studio-action-row > span,
+.el-button.studio-tool-row > span {
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  background: transparent;
+}
+
+.el-button.studio-action-row > span > span:first-child,
+.el-button.studio-tool-row > span > span:first-child {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border: 1px solid #dbe3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #4c6f9f;
+  font-size: 14px;
+}
+
+.el-button.studio-action-row > span > span:nth-child(2),
+.el-button.studio-tool-row > span > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.home-view .el-button.studio-action-row:hover,
+.home-view .el-button.studio-tool-row:hover,
+.home-view .el-button.studio-tool-row.is-active {
+  border-color: #d7e2f4;
+  background: #ffffff;
+}
+
+.el-button.studio-tool-row.is-active > span > span:first-child {
+  border-color: #bcd0ff;
+  background: var(--studio-blue-soft);
+  color: var(--studio-blue);
+}
+
+.el-button.studio-tool-row--ai > span > span:first-child {
+  border-color: #d9d3ff;
+  color: #6f5bd3;
+}
+
+.right-toolbar__stats .el-statistic {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface-muted);
+}
+
+.right-toolbar__stats .el-statistic__head {
+  margin-bottom: 4px;
+  color: var(--studio-text-subtle);
+  font-size: 8px;
+}
+
+.right-toolbar__stats .el-statistic__content {
+  color: var(--studio-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.geometry-card.el-card,
+.ai-provider-card.el-card {
+  padding: 0;
+}
+
+.geometry-card .el-card__body {
+  padding: 0;
+}
+
+.ai-provider-card .el-card__header {
+  padding: 12px 14px;
+}
+
+.ai-provider-card .el-card__body {
+  padding: 14px;
+}
+
+.ai-provider-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-provider-form-grid .el-form-item {
+  margin-bottom: 0;
+}
+
+.ai-provider-form-grid .el-form-item__label {
+  margin-bottom: 5px;
+  color: #59677c;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.top-info .el-card__header,
+.side-dialog .el-card__header {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--studio-border);
+  background: #f4f7fb;
+  color: var(--studio-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.top-info .el-card__body,
+.side-dialog .el-card__body {
+  padding: 16px;
+  color: #435066;
+  font-size: 10px;
+  line-height: 1.7;
 }
 
 .top-info,
