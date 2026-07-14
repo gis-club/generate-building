@@ -86,7 +86,15 @@ export const samRequestMethods = {
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          this.queryModelReturnTensors(blob, prompt, canvas.height, fileName, showPrompt, skipInference)
+          this.queryModelReturnTensors(
+            blob,
+            prompt,
+            canvas.width,
+            canvas.height,
+            fileName,
+            showPrompt,
+            skipInference
+          )
         }
       },
       'image/jpeg',
@@ -94,7 +102,15 @@ export const samRequestMethods = {
     )
   },
 
-  async queryModelReturnTensors(blob, prompt, imageHeight, fileName, showPrompt, skipInference) {
+  async queryModelReturnTensors(
+    blob,
+    prompt,
+    imageWidth,
+    imageHeight,
+    fileName,
+    showPrompt,
+    skipInference
+  ) {
     if (skipInference) {
       return
     }
@@ -102,7 +118,7 @@ export const samRequestMethods = {
     try {
       this.samError = null
       const result = await requestSamAutomaticMasks(blob)
-      this.handleAllModelResults(result, imageHeight, this)
+      this.handleAllModelResults(result, imageWidth, imageHeight, this)
     } catch (error) {
       this.samError = 'AI识别请求失败，请检查网络或代理配置后重试'
       this.loadingHtml(false)

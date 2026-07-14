@@ -81,7 +81,49 @@ function fallbackHeights(lonlats) {
   })
 }
 
+function polygonArea(points) {
+  let area = 0
+  for (let index = 0; index < points.length; index += 1) {
+    const current = points[index]
+    const next = points[(index + 1) % points.length]
+    area += current[0] * next[1] - next[0] * current[1]
+  }
+  return Math.abs(area) / 2
+}
+
+/**
+ * Vision LLMs can occasionally return the image/background boundary as a building.
+ * Reject those screen-sized outlines before projecting them onto the globe.
+ */
+function isPlausibleVisionOutline(points) {
+  if (!Array.isArray(points) || points.length < 3) return false
+  if (points.some((point) => !Array.isArray(point) || !Number.isFinite(point[0]) || !Number.isFinite(point[1]))) {
+    return false
+  }
+
+  const areaRatio = polygonArea(points) / 1_000_000
+  if (areaRatio < 0.0002 || areaRatio > 0.18) return false
+
+  const xs = points.map((point) => point[0])
+  const ys = points.map((point) => point[1])
+  const spanX = (Math.max(...xs) - Math.min(...xs)) / 1000
+  const spanY = (Math.max(...ys) - Math.min(...ys)) / 1000
+  return spanX <= 0.8 && spanY <= 0.8
+}
+
 export const homeViewAiMethods = {
+  startAIRecognitionProgress(stage = '正在准备地图画面') {
+    this.aiProgress = 8
+    this.aiProgressStage = stage
+    this.aiProgressStartedAt = Date.now()
+  },
+
+  updateAIRecognitionProgress(percentage, stage) {
+    const nextPercentage = Math.max(0, Math.min(100, Number(percentage) || 0))
+    this.aiProgress = Math.max(Number(this.aiProgress) || 0, nextPercentage)
+    if (stage) this.aiProgressStage = stage
+  },
+
   openAIProviderManager() {
     this.aiProviderDialogVisible = true
   },
@@ -110,7 +152,7 @@ export const homeViewAiMethods = {
     if (index < 0) return
     this.aiProviders.splice(index, 1)
     if (String(this.aiActiveModelKey).startsWith(`${provider.id}::`)) {
-      this.aiActiveModelKey = 'local-sam::segment-anything'
+      this.aiActiveModelKey = ''
     }
     this.saveAIProviderSettings(false)
   },
@@ -180,20 +222,27 @@ export const homeViewAiMethods = {
 
     this.aiRunning = true
     this.aiError = ''
+    this.startAIRecognitionProgress('正在截取当前地图画面')
     try {
       const viewer = window.myViewer.viewer
       viewer.render()
       const canvas = viewer.scene.canvas
       const imageDataUrl = canvas.toDataURL('image/png')
+      this.updateAIRecognitionProgress(24, '地图画面已就绪，正在提交识别任务')
+      this.updateAIRecognitionProgress(36, `${active.model.name || active.model.id} 正在分析建筑轮廓`)
       const outlines = await recognizeBuildingsWithVisionModel(active.provider, active.model, {
         imageDataUrl,
         maxBuildings: this.aiMaxBuildings
       })
+      this.updateAIRecognitionProgress(68, '模型结果已返回，正在解析建筑轮廓')
       const lonlats = this.normalizedOutlinesToLonlats(outlines, canvas)
       if (!lonlats.length) {
         throw new Error('识别轮廓未能投影到当前地图，请确认画面中心位于地球表面')
       }
-      await this.appendAIRecognizedBuildings(lonlats, active.model.name || active.model.id)
+      this.updateAIRecognitionProgress(78, '轮廓解析完成，正在匹配地图坐标')
+      const recognizedCount = await this.appendAIRecognizedBuildings(lonlats, active.model.name || active.model.id)
+      this.updateAIRecognitionProgress(100, `识别完成，已生成 ${recognizedCount} 个区域`)
+      await sleep(650)
     } catch (error) {
       console.error('vision model assist failed:', error)
       this.aiError = error?.message || 'AI识别失败'
@@ -211,6 +260,7 @@ export const homeViewAiMethods = {
 
     return outlines
       .map((outline) => {
+        if (!isPlausibleVisionOutline(outline.polygon)) return null
         const polygon = []
         for (const point of outline.polygon || []) {
           const screenPoint = new Cesium.Cartesian2(
@@ -240,7 +290,9 @@ export const homeViewAiMethods = {
   async appendAIRecognizedBuildings(lonlats, modelName = 'AI') {
     const normalized = normalizeSamLonlats(lonlats)
     if (!normalized.length) throw new Error('AI未识别到可用区域')
+    this.updateAIRecognitionProgress?.(84, '正在采样地形高程')
     const minHeights = await this.getRealHeight(normalized)
+    this.updateAIRecognitionProgress?.(93, '正在生成建筑对象')
     const startId = this.currId
 
     for (let index = 0; index < normalized.length; index += 1) {
@@ -265,6 +317,7 @@ export const homeViewAiMethods = {
         this.$refs.scrollContainer.scrollTop = this.$refs.scrollContainer.scrollHeight
       }
     })
+    return normalized.length
   },
 
   /**
@@ -284,11 +337,13 @@ export const homeViewAiMethods = {
 
     this.aiRunning = true
     this.aiError = ''
+    this.startAIRecognitionProgress('正在截取当前地图画面')
     this.removeSamArtifacts()
 
     try {
       window.myViewer.viewer.render()
       const dataUrl = window.myViewer.viewer.scene.canvas.toDataURL('image/png')
+      this.updateAIRecognitionProgress(24, '地图画面已就绪，正在提交 SAM 任务')
 
       this.myAIObject = new SAMRecovered({
         viewer: window.myViewer,
@@ -297,8 +352,12 @@ export const homeViewAiMethods = {
         drawCanvasShow: false
       })
 
+      this.updateAIRecognitionProgress(36, 'SAM 正在分割建筑轮廓')
       const lonlats = await this.waitForSamLonlats()
-      await this.appendAIRecognizedBuildings(lonlats, 'SAM')
+      this.updateAIRecognitionProgress(72, '分割结果已返回，正在解析建筑轮廓')
+      const recognizedCount = await this.appendAIRecognizedBuildings(lonlats, 'SAM')
+      this.updateAIRecognitionProgress(100, `识别完成，已生成 ${recognizedCount} 个区域`)
+      await sleep(650)
     } catch (error) {
       console.error('AI assist failed:', error)
       this.aiError = error?.message || 'AI识别失败'

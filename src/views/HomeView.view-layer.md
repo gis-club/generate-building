@@ -3,8 +3,20 @@
 ## 入口关系
 
 - `src/views/HomeView.vue`
-  - 页面模板与样式入口。
-  - 只保留视图层交互，核心逻辑从 `src/views/HomeView.logic.ts` 注入。
+  - 页面编排、状态协调与工作台样式入口。
+  - 核心逻辑从 `src/views/HomeView.logic.ts` 注入，界面区域拆到 `src/components/workspace/`。
+
+- `src/components/workspace/`
+  - `StudioHeader.vue`：品牌、摘要和导入导出操作。
+  - `WorkspaceRail.vue`：工作区主导航。
+  - `WorkspaceSidebar.vue`：图层、工具和 AI 模型入口。
+  - `MapWorkspaceControls.vue`：地图快捷操作、摘要和状态栏。
+  - `ObjectInspector.vue`：建筑对象参数检查器。
+  - `WorkspaceDialogs.vue` / `WorkspaceFeedback.vue`：表单和反馈浮层。
+  - `AIProviderDialog.vue`：模型供应商与模型目录管理。
+
+- `src/styles/workspace.css`
+  - 工作台组件共享的主题变量、布局和 Element Plus 适配样式。
 
 - `src/views/HomeView.logic.ts`
   - 页面逻辑总装配文件。
@@ -61,7 +73,7 @@
 
 - `ref="imgBox"`：Cesium 地图容器引用
 - `ref="threeContainer"`：Three.js 容器引用
-- `ref="scrollContainer"`：右侧建筑列表滚动容器
+- `ref="scrollContainer"`：`ObjectInspector` 暴露的滚动容器兼容接口
 - `id="map"`：Cesium 挂载点
 - `id="posList"`：测绘控件输出临时坐标的隐藏容器
 - `id="fileInput"`：GeoJSON 文件导入输入框

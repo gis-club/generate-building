@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "type-check": "vue-tsc --noEmit",
     "build": "vite build",
     "postbuild": "node scripts/fix-cesium-base.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check": "npm run type-check && npm run build"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
