@@ -53,7 +53,9 @@ export interface ActiveVisionModel {
 
 const REGISTRY_STORAGE_KEY = 'geobuild.ai.providers.v2'
 const SESSION_SECRETS_KEY = 'geobuild.ai.provider-secrets.v2'
-const ACTIVE_MODEL_STORAGE_KEY = 'geobuild.ai.active-model.v2'
+const ACTIVE_MODEL_STORAGE_KEY = 'geobuild.ai.active-model.v3'
+const LEGACY_ACTIVE_MODEL_STORAGE_KEY = 'geobuild.ai.active-model.v2'
+const LEGACY_DEFAULT_SAM_MODEL_KEY = 'local-sam::segment-anything'
 
 export const VISION_PROVIDER_TEMPLATES: VisionProviderTemplate[] = [
   {
@@ -250,7 +252,15 @@ export function saveVisionProviders(providers: VisionProviderConfig[]) {
 }
 
 export function getActiveVisionModelKey() {
-  return localStorage.getItem(ACTIVE_MODEL_STORAGE_KEY) || 'local-sam::segment-anything'
+  const current = localStorage.getItem(ACTIVE_MODEL_STORAGE_KEY)
+  if (current != null) return current
+
+  // v2 used SAM as an implicit default. Keep an explicitly selected non-SAM
+  // model during migration, but start unselected for the legacy SAM default.
+  const legacy = localStorage.getItem(LEGACY_ACTIVE_MODEL_STORAGE_KEY) || ''
+  const migrated = legacy === LEGACY_DEFAULT_SAM_MODEL_KEY ? '' : legacy
+  localStorage.setItem(ACTIVE_MODEL_STORAGE_KEY, migrated)
+  return migrated
 }
 
 export function saveActiveVisionModelKey(value: string) {

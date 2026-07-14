@@ -335,26 +335,27 @@ export class MaskTraceRecovered {
       wrapper.id = 'loading-sam'
       document.body.appendChild(wrapper)
       wrapper.style = `
-        position: absolute;
-        top: 0px;
-        right: 0px;
+        position: fixed;
+        inset: 0;
         background: rgba(0, 0, 0, 0.6);
-        z-index: 2;
-        width: 100%;
-        height: 100%;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       `
 
       const text = document.createElement('span')
       wrapper.appendChild(text)
-      text.innerHTML = '妯″瀷璇嗗埆涓?..'
+      text.textContent = 'AI 正在识别建筑轮廓…'
       text.style = `
-        color: rgb(0, 0, 0);
-        font-size: 36px;
-        line-height: ${window.innerHeight}px;
-        margin-left: 42%;
-        background: rgb(255, 255, 255);
-        padding: 8px 60px;
-        letter-spacing: 2px;
+        color: #17243a;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1;
+        background: #ffffff;
+        padding: 18px 28px;
+        border-radius: 10px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
       `
       return
     }

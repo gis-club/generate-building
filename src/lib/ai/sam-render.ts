@@ -7,16 +7,53 @@ import {
   GeometryRecovered
 } from '../mbs-sdk-exports-core.ts'
 
+const MIN_BUILDING_MASK_AREA_RATIO = 0.0002
+const MAX_BUILDING_MASK_AREA_RATIO = 0.18
+const MAX_BUILDING_MASK_SPAN_RATIO = 0.8
+
+/**
+ * SAM automatic masks also contain roads, vegetation and large background regions.
+ * Only keep screen-space regions whose size is plausible for a single building.
+ */
+function isPlausibleBuildingRegion(tracer, svgPath, imageWidth, imageHeight) {
+  const imageArea = imageWidth * imageHeight
+  if (!Number.isFinite(imageArea) || imageArea <= 0) return false
+
+  const areaRatio = Math.abs(tracer.areaOfSVGPolygon(svgPath)) / imageArea
+  if (
+    areaRatio < MIN_BUILDING_MASK_AREA_RATIO ||
+    areaRatio > MAX_BUILDING_MASK_AREA_RATIO
+  ) {
+    return false
+  }
+
+  const points = tracer.extractPoints(tracer.parsePath(svgPath))
+  if (points.length < 3) return false
+
+  const xs = points.map((point) => point[0])
+  const ys = points.map((point) => point[1])
+  const spanX = (Math.max(...xs) - Math.min(...xs)) / imageWidth
+  const spanY = (Math.max(...ys) - Math.min(...ys)) / imageHeight
+
+  return spanX <= MAX_BUILDING_MASK_SPAN_RATIO && spanY <= MAX_BUILDING_MASK_SPAN_RATIO
+}
+
 export const samRenderMethods = {
-  handleAllModelResults(results, imageHeight, context) {
+  handleAllModelResults(results, imageWidth, imageHeight, context) {
     const tracer = new MaskTraceRecovered()
-    const polygons = results.map((item) => {
-      const decoded = LZString.decompressFromEncodedURIComponent(item.encodedMask)
-      return {
-        svg: tracer.traceCompressedRLeStringToSVG(decoded, imageHeight),
-        point_coord: item.point_coord
-      }
-    })
+    const polygons = results
+      .map((item) => {
+        const decoded = LZString.decompressFromEncodedURIComponent(item.encodedMask)
+        const svg = tracer
+          .traceCompressedRLeStringToSVG(decoded, imageHeight)
+          .filter((path) => isPlausibleBuildingRegion(tracer, path, imageWidth, imageHeight))
+
+        return {
+          svg,
+          point_coord: item.point_coord
+        }
+      })
+      .filter((item) => item.svg.length > 0)
 
     context.samLonlats = tracer.canvasToLonlats(context.viewer, polygons)
     context.myGeometry = new GeometryRecovered()

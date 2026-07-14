@@ -81,6 +81,36 @@ function fallbackHeights(lonlats) {
   })
 }
 
+function polygonArea(points) {
+  let area = 0
+  for (let index = 0; index < points.length; index += 1) {
+    const current = points[index]
+    const next = points[(index + 1) % points.length]
+    area += current[0] * next[1] - next[0] * current[1]
+  }
+  return Math.abs(area) / 2
+}
+
+/**
+ * Vision LLMs can occasionally return the image/background boundary as a building.
+ * Reject those screen-sized outlines before projecting them onto the globe.
+ */
+function isPlausibleVisionOutline(points) {
+  if (!Array.isArray(points) || points.length < 3) return false
+  if (points.some((point) => !Array.isArray(point) || !Number.isFinite(point[0]) || !Number.isFinite(point[1]))) {
+    return false
+  }
+
+  const areaRatio = polygonArea(points) / 1_000_000
+  if (areaRatio < 0.0002 || areaRatio > 0.18) return false
+
+  const xs = points.map((point) => point[0])
+  const ys = points.map((point) => point[1])
+  const spanX = (Math.max(...xs) - Math.min(...xs)) / 1000
+  const spanY = (Math.max(...ys) - Math.min(...ys)) / 1000
+  return spanX <= 0.8 && spanY <= 0.8
+}
+
 export const homeViewAiMethods = {
   openAIProviderManager() {
     this.aiProviderDialogVisible = true
@@ -110,7 +140,7 @@ export const homeViewAiMethods = {
     if (index < 0) return
     this.aiProviders.splice(index, 1)
     if (String(this.aiActiveModelKey).startsWith(`${provider.id}::`)) {
-      this.aiActiveModelKey = 'local-sam::segment-anything'
+      this.aiActiveModelKey = ''
     }
     this.saveAIProviderSettings(false)
   },
@@ -211,6 +241,7 @@ export const homeViewAiMethods = {
 
     return outlines
       .map((outline) => {
+        if (!isPlausibleVisionOutline(outline.polygon)) return null
         const polygon = []
         for (const point of outline.polygon || []) {
           const screenPoint = new Cesium.Cartesian2(
