@@ -15,96 +15,267 @@
         :style="{ height: `${mapDivHeight}px`, width: '100%' }"
       />
 
-      <aside class="left-toolbar" @click.stop>
-        <div class="left-toolbar__brand">
-          <div class="left-toolbar__logo">GIS</div>
-          <div class="left-toolbar__brand-copy">
-            <span>GIS Platform</span>
-            <h1>GIS 工作台</h1>
-            <p>更舒适、更聚焦的地理空间编辑界面</p>
+      <header class="studio-header" @click.stop>
+        <div class="studio-brand">
+          <div class="studio-brand__mark"><span>G</span></div>
+          <div class="studio-brand__copy">
+            <strong>GeoBuild</strong>
+            <span>空间建模工作台</span>
           </div>
         </div>
 
-        <div class="left-toolbar__section">基础操作</div>
-        <button class="left-tool-btn" @click="handleGoNorth">回到正北</button>
-        <button class="left-tool-btn" @click="handleResetHome">初始位置</button>
-        <button class="left-tool-btn" @click="showComingSoon('图层控制')">图层控制</button>
-        <button class="left-tool-btn" @click="togglePositionPanel">自定义位置</button>
-        <button class="left-tool-btn" @click="toggleLayerPanel">自定义图层</button>
-        <button class="left-tool-btn" @click="openImportDialog">导入geojson</button>
-        <button class="left-tool-btn" @click="exportJson(0)">导出geojson</button>
-        <button class="left-tool-btn" @click="exportGltf()">导出gltf</button>
-        <div class="left-toolbar__section">模型处理</div>
-        <button class="left-tool-btn" @click="updateView()">切换场景</button>
-        <button class="left-tool-btn" @click="adjustAllHeight(-5)">降低整体高度</button>
-        <button class="left-tool-btn" @click="adjustAllHeight(5)">升高整体高度</button>
-        <button
-          class="left-tool-btn"
-          :class="{ 'is-active': selectedVisualMode === 'preview' }"
-          @click="setVisualMode('preview')"
-        >
-          预览模型
-        </button>
-        <button
-          class="left-tool-btn"
-          :class="{ 'is-active': selectedVisualMode === 'wireframe' }"
-          @click="setVisualMode('wireframe')"
-        >
-          线框化
-        </button>
-        <button
-          class="left-tool-btn"
-          :class="{ 'is-active': selectedVisualMode === 'hidden' }"
-          @click="setVisualMode('hidden')"
-        >
-          隐藏模型
-        </button>
-        <button
-          class="left-tool-btn"
-          :class="{ 'is-active': drawingActive }"
-          @click="handleDrawArea"
-        >
-          绘制区域
-        </button>
-        <button class="left-tool-btn" @click="toggleAllPanels">全部折叠</button>
-        <button
-          class="left-tool-btn"
-          :class="{ 'is-active': aiRunning }"
-          @click="handleAIAssist"
-        >
-          {{ aiRunning ? 'AI识别中' : 'AI辅助' }}
-        </button>
+        <div class="studio-breadcrumb">
+          <span>工作空间</span>
+          <b>/</b>
+          <strong>建筑白模生成</strong>
+          <span class="studio-save-state"><i /> 已保存</span>
+        </div>
+
+        <div class="studio-header__summary">
+          <span><b>{{ finalData.length }}</b> 个建筑</span>
+          <span><b>{{ pointCount }}</b> 个轮廓点</span>
+          <span>{{ sceneModeLabel }}</span>
+        </div>
+
+        <div class="studio-header__actions">
+          <button class="studio-header-btn" @click="openImportDialog">
+            <el-icon><Upload /></el-icon>
+            导入
+          </button>
+          <button class="studio-header-btn studio-header-btn--primary" @click="exportJson(0)">
+            <el-icon><Download /></el-icon>
+            导出
+          </button>
+          <button class="studio-icon-btn" title="帮助" @click="showInfo($event, 1)">
+            <el-icon><HelpFilled /></el-icon>
+          </button>
+          <button class="studio-icon-btn" title="关于" @click="showInfo($event, 2)">
+            <el-icon><InfoFilled /></el-icon>
+          </button>
+        </div>
+      </header>
+
+      <nav class="studio-rail" aria-label="工作区导航" @click.stop>
+        <div class="studio-rail__main">
+          <button
+            :class="{ 'is-active': activeWorkspacePanel === 'layers' }"
+            title="数据与图层"
+            @click="activeWorkspacePanel = 'layers'"
+          >
+            <el-icon><Files /></el-icon>
+            <span>图层</span>
+          </button>
+          <button
+            :class="{ 'is-active': activeWorkspacePanel === 'tools' }"
+            title="处理工具"
+            @click="activeWorkspacePanel = 'tools'"
+          >
+            <el-icon><Operation /></el-icon>
+            <span>处理</span>
+          </button>
+          <button title="切换场景" @click="updateView()">
+            <el-icon><View /></el-icon>
+            <span>视图</span>
+          </button>
+          <button :class="{ 'is-active': aiRunning }" title="AI 辅助" @click="handleAIAssist">
+            <el-icon><MagicStick /></el-icon>
+            <span>AI</span>
+          </button>
+        </div>
+        <div class="studio-rail__bottom">
+          <button title="工作台说明" @click="showInfo($event, 4)">
+            <el-icon><InfoFilled /></el-icon>
+            <span>说明</span>
+          </button>
+        </div>
+      </nav>
+
+      <aside class="left-toolbar studio-sidebar" @click.stop>
+        <div class="studio-sidebar__header">
+          <div>
+            <span class="studio-panel-kicker">Workspace</span>
+            <h1>{{ activeWorkspacePanel === 'layers' ? '数据与图层' : '空间处理工具' }}</h1>
+          </div>
+          <span class="studio-count-badge">{{ activeWorkspacePanel === 'layers' ? finalData.length + 1 : 15 }}</span>
+        </div>
+
+        <div class="studio-sidebar__tabs">
+          <button
+            :class="{ 'is-active': activeWorkspacePanel === 'layers' }"
+            @click="activeWorkspacePanel = 'layers'"
+          >
+            图层
+          </button>
+          <button
+            :class="{ 'is-active': activeWorkspacePanel === 'tools' }"
+            @click="activeWorkspacePanel = 'tools'"
+          >
+            工具
+          </button>
+        </div>
+
+        <label class="studio-search">
+          <el-icon><Search /></el-icon>
+          <input v-model="toolSearch" :placeholder="activeWorkspacePanel === 'layers' ? '搜索图层' : '搜索处理工具'" />
+          <kbd>/</kbd>
+        </label>
+
+        <div v-if="activeWorkspacePanel === 'layers'" class="studio-sidebar__scroll">
+          <section class="studio-section">
+            <div class="studio-section__heading">
+              <span>地图内容</span>
+              <button title="添加图层" @click="toggleLayerPanel"><el-icon><Plus /></el-icon></button>
+            </div>
+
+            <div v-show="matchesSearch('ArcGIS 卫星影像 底图')" class="studio-layer-row is-basemap">
+              <span class="studio-layer-thumb studio-layer-thumb--imagery" />
+              <div>
+                <strong>ArcGIS 卫星影像</strong>
+                <small>影像底图 · 在线</small>
+              </div>
+              <span class="studio-layer-tag">底图</span>
+            </div>
+
+            <div
+              v-for="item in finalData"
+              v-show="matchesSearch(item.name || `建筑 ${item.id + 1}`)"
+              :key="`layer-${item.id}`"
+              class="studio-layer-row"
+              @click="updatePanel(item.id)"
+            >
+              <span class="studio-layer-thumb" :style="{ background: item.color }">
+                <el-icon><Box /></el-icon>
+              </span>
+              <div>
+                <strong>{{ item.name || `建筑 ${item.id + 1}` }}</strong>
+                <small>面要素 · {{ Math.max(item.lonlats.length - 1, 0) }} 个节点</small>
+              </div>
+              <span class="studio-layer-dot" />
+            </div>
+
+            <div v-if="finalData.length === 0" class="studio-empty-layer">
+              <el-icon><Box /></el-icon>
+              <strong>还没有建筑图层</strong>
+              <p>绘制区域或导入 GeoJSON 开始建模</p>
+              <button @click="handleDrawArea">绘制第一个区域</button>
+            </div>
+          </section>
+
+          <section class="studio-section studio-section--actions">
+            <div class="studio-section__heading"><span>数据源</span></div>
+            <button class="studio-action-row" @click="openImportDialog">
+              <span><el-icon><Upload /></el-icon></span>
+              <div><strong>导入本地数据</strong><small>GeoJSON / JSON</small></div>
+            </button>
+            <button class="studio-action-row" @click="toggleLayerPanel">
+              <span><el-icon><MapLocation /></el-icon></span>
+              <div><strong>连接在线图层</strong><small>XYZ / WMTS 服务</small></div>
+            </button>
+          </section>
+        </div>
+
+        <div v-else class="studio-sidebar__scroll studio-toolbox">
+          <section v-show="matchesSearch('绘制区域 导入 GeoJSON')" class="studio-section">
+            <div class="studio-section__heading"><span>最近使用</span></div>
+            <div class="studio-recent-grid">
+              <button @click="handleDrawArea"><el-icon><EditPen /></el-icon><span>绘制区域</span></button>
+              <button @click="openImportDialog"><el-icon><Upload /></el-icon><span>导入数据</span></button>
+            </div>
+          </section>
+
+          <section v-show="matchesSearch('回到正北 初始位置 自定义位置 图层控制')" class="studio-section">
+            <div class="studio-section__heading"><span>地图导航</span><small>4</small></div>
+            <button v-show="matchesSearch('回到正北')" class="studio-tool-row" @click="handleGoNorth">
+              <span><el-icon><Aim /></el-icon></span><div><strong>回到正北</strong><small>校正地图方向</small></div><kbd>N</kbd>
+            </button>
+            <button v-show="matchesSearch('初始位置')" class="studio-tool-row" @click="handleResetHome">
+              <span><el-icon><Refresh /></el-icon></span><div><strong>初始位置</strong><small>回到默认视角</small></div><kbd>H</kbd>
+            </button>
+            <button v-show="matchesSearch('自定义位置')" class="studio-tool-row" @click="togglePositionPanel">
+              <span><el-icon><Location /></el-icon></span><div><strong>定位到坐标</strong><small>WGS84 经纬度</small></div>
+            </button>
+            <button v-show="matchesSearch('图层控制')" class="studio-tool-row" @click="showComingSoon('图层控制')">
+              <span><el-icon><MapLocation /></el-icon></span><div><strong>图层控制</strong><small>可见性与顺序</small></div>
+            </button>
+          </section>
+
+          <section v-show="matchesSearch('导入 导出 GeoJSON glTF 自定义图层')" class="studio-section">
+            <div class="studio-section__heading"><span>数据管理</span><small>4</small></div>
+            <button v-show="matchesSearch('导入 GeoJSON')" class="studio-tool-row" @click="openImportDialog">
+              <span><el-icon><Upload /></el-icon></span><div><strong>导入 GeoJSON</strong><small>添加本地矢量数据</small></div>
+            </button>
+            <button v-show="matchesSearch('自定义图层')" class="studio-tool-row" @click="toggleLayerPanel">
+              <span><el-icon><Plus /></el-icon></span><div><strong>添加在线图层</strong><small>连接地图服务</small></div>
+            </button>
+            <button v-show="matchesSearch('导出 GeoJSON')" class="studio-tool-row" @click="exportJson(0)">
+              <span><el-icon><Download /></el-icon></span><div><strong>导出 GeoJSON</strong><small>保存矢量结果</small></div>
+            </button>
+            <button v-show="matchesSearch('导出 glTF')" class="studio-tool-row" @click="exportGltf()">
+              <span><el-icon><Download /></el-icon></span><div><strong>导出 glTF</strong><small>保存三维模型</small></div>
+            </button>
+          </section>
+
+          <section v-show="matchesSearch('场景 高度 模型 线框 隐藏 折叠')" class="studio-section">
+            <div class="studio-section__heading"><span>三维建模</span><small>7</small></div>
+            <button v-show="matchesSearch('切换场景')" class="studio-tool-row" @click="updateView()">
+              <span><el-icon><Operation /></el-icon></span><div><strong>切换场景</strong><small>{{ sceneModeLabel }}</small></div>
+            </button>
+            <button v-show="matchesSearch('降低整体高度')" class="studio-tool-row" @click="adjustAllHeight(-5)">
+              <span><el-icon><ArrowDown /></el-icon></span><div><strong>降低整体高度</strong><small>全部建筑 -5m</small></div>
+            </button>
+            <button v-show="matchesSearch('升高整体高度')" class="studio-tool-row" @click="adjustAllHeight(5)">
+              <span><el-icon><ArrowUp /></el-icon></span><div><strong>升高整体高度</strong><small>全部建筑 +5m</small></div>
+            </button>
+            <button v-show="matchesSearch('实体预览 模型')" class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'preview' }" @click="setVisualMode('preview')">
+              <span><el-icon><View /></el-icon></span><div><strong>实体预览</strong><small>显示建筑模型</small></div>
+            </button>
+            <button v-show="matchesSearch('线框预览 模型')" class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'wireframe' }" @click="setVisualMode('wireframe')">
+              <span><el-icon><Grid /></el-icon></span><div><strong>线框预览</strong><small>查看模型拓扑</small></div>
+            </button>
+            <button v-show="matchesSearch('隐藏模型')" class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'hidden' }" @click="setVisualMode('hidden')">
+              <span><el-icon><Hide /></el-icon></span><div><strong>隐藏模型</strong><small>仅保留底图</small></div>
+            </button>
+            <button v-show="matchesSearch('折叠 参数')" class="studio-tool-row" @click="toggleAllPanels">
+              <span><el-icon><Fold /></el-icon></span><div><strong>折叠参数面板</strong><small>整理对象检查器</small></div>
+            </button>
+          </section>
+
+          <section v-show="matchesSearch('AI 智能 建筑识别')" class="studio-section">
+            <div class="studio-section__heading"><span>智能处理</span><small>Beta</small></div>
+            <button class="studio-tool-row studio-tool-row--ai" :class="{ 'is-active': aiRunning }" @click="handleAIAssist">
+              <span><el-icon><MagicStick /></el-icon></span><div><strong>{{ aiRunning ? 'AI 识别中' : 'AI 建筑识别' }}</strong><small>从影像提取建筑轮廓</small></div>
+            </button>
+          </section>
+        </div>
+
+        <div class="studio-sidebar__footer">
+          <span class="studio-online-dot" />
+          <div><strong>本地工作区</strong><small>{{ currUserIsTry }} · 自动保存</small></div>
+        </div>
       </aside>
 
-      <div class="top-panel" @click.stop>
-        <div class="top-panel__overview">
-          <div class="top-panel__intro">
-            <span class="top-panel__eyebrow">Workspace Overview</span>
-            <strong>当前共 {{ finalData.length }} 个建筑，{{ pointCount }} 个轮廓点</strong>
-          </div>
-          <div class="top-panel__stats">
-            <div class="top-stat-chip">
-              <span>视图</span>
-              <strong>{{ visualModeLabel }}</strong>
-            </div>
-            <div class="top-stat-chip">
-              <span>场景</span>
-              <strong>{{ sceneModeLabel }}</strong>
-            </div>
-            <div class="top-stat-chip">
-              <span>账号</span>
-              <strong>{{ currUserIsTry }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="top-panel__links">
-          <button @click="showInfo($event, 1)">帮助</button>
-          <button @click="showInfo($event, 2)">关于</button>
-          <button @click="showInfo($event, 3)">定价</button>
-          <button @click="showInfo($event, 4)">说明</button>
-        </div>
+      <div class="map-commandbar" @click.stop>
+        <button title="初始位置" @click="handleResetHome"><el-icon><Refresh /></el-icon></button>
+        <button title="回到正北" @click="handleGoNorth"><el-icon><Aim /></el-icon></button>
+        <span />
+        <button :class="{ 'is-active': drawingActive }" title="绘制区域" @click="handleDrawArea"><el-icon><EditPen /></el-icon></button>
+        <button title="定位到坐标" @click="togglePositionPanel"><el-icon><Location /></el-icon></button>
       </div>
+
+      <div class="map-overview-card" @click.stop>
+        <span class="map-overview-card__icon"><el-icon><Box /></el-icon></span>
+        <div><strong>{{ finalData.length }} 个建筑对象</strong><small>{{ visualModeLabel }} · 平均高度 {{ averageExtrudeHeight }}m</small></div>
+      </div>
+
+      <footer class="studio-statusbar" @click.stop>
+        <div><span class="studio-online-dot" /> 就绪</div>
+        <div class="studio-statusbar__center">
+          <span>对象 {{ finalData.length }}</span>
+          <span>节点 {{ pointCount }}</span>
+          <span>场景 {{ sceneModeLabel }}</span>
+        </div>
+        <div><span>EPSG:4326</span><span>WGS 84</span><span>100%</span></div>
+      </footer>
     </template>
 
     <div v-if="infoShow1" class="top-info" @click.stop>
@@ -230,7 +401,6 @@
     </div>
 
     <aside
-      v-if="finalData.length > 0"
       ref="scrollContainer"
       class="tool-panel right-toolbar"
       :style="{ height: `${mapDivHeight - 70}px` }"
@@ -239,7 +409,7 @@
       <div class="right-toolbar__header">
         <div class="right-toolbar__title">
           <span class="right-toolbar__eyebrow">Inspector</span>
-          <strong>建筑参数面板</strong>
+          <strong>对象检查器</strong>
         </div>
         <button class="right-toolbar__toggle" @click="toggleAllPanels">{{ panelToggleText }}</button>
       </div>
@@ -257,6 +427,13 @@
           <span>平均高度</span>
           <strong>{{ averageExtrudeHeight }}m</strong>
         </div>
+      </div>
+
+      <div v-if="finalData.length === 0" class="inspector-empty">
+        <span><el-icon><Setting /></el-icon></span>
+        <strong>未选择空间对象</strong>
+        <p>从左侧图层面板导入数据，或使用绘制工具创建新的建筑轮廓。</p>
+        <button @click="handleDrawArea"><el-icon><EditPen /></el-icon> 绘制区域</button>
       </div>
 
       <div v-for="item in finalData" :key="item.id" class="geometry-card">
@@ -347,7 +524,31 @@
 </template>
 
 <script lang="ts">
-import { Delete } from '@element-plus/icons-vue'
+import {
+  Aim,
+  ArrowDown,
+  ArrowUp,
+  Box,
+  Delete,
+  Download,
+  EditPen,
+  Files,
+  Fold,
+  Grid,
+  HelpFilled,
+  Hide,
+  InfoFilled,
+  Location,
+  MagicStick,
+  MapLocation,
+  Operation,
+  Plus,
+  Refresh,
+  Search,
+  Setting,
+  Upload,
+  View
+} from '@element-plus/icons-vue'
 import homeViewOptions from './HomeView.logic.ts'
 
 /**
@@ -360,7 +561,29 @@ export default {
   ...homeViewOptions,
   components: {
     ...(homeViewOptions.components || {}),
-    Delete
+    Aim,
+    ArrowDown,
+    ArrowUp,
+    Box,
+    Delete,
+    Download,
+    EditPen,
+    Files,
+    Fold,
+    Grid,
+    HelpFilled,
+    Hide,
+    InfoFilled,
+    Location,
+    MagicStick,
+    MapLocation,
+    Operation,
+    Plus,
+    Refresh,
+    Search,
+    Setting,
+    Upload,
+    View
   },
   data() {
     /**
@@ -370,7 +593,9 @@ export default {
     const baseData = typeof createBaseData === 'function' ? createBaseData.call(this) : {}
     return {
       ...baseData,
-      selectedVisualMode: 'preview'
+      selectedVisualMode: 'preview',
+      activeWorkspacePanel: 'layers',
+      toolSearch: ''
     }
   },
   computed: {
@@ -397,6 +622,11 @@ export default {
   },
   methods: {
     ...(homeViewOptions.methods || {}),
+    matchesSearch(...labels) {
+      const keyword = String(this.toolSearch || '').trim().toLowerCase()
+      if (!keyword) return true
+      return labels.some((label) => String(label || '').toLowerCase().includes(keyword))
+    },
     /**
      * 关闭顶部说明类浮层。
      * 左侧工具面板切换前统一调用，避免多个面板叠在一起。
@@ -1191,3 +1421,5 @@ body,
   }
 }
 </style>
+
+<style src="./HomeView.studio.css"></style>
