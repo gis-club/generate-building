@@ -1,9 +1,9 @@
 ﻿import {
-  ViewerRecovered,
+  Viewer,
   LayerRecovered,
   GEManageRecovered,
   BaseWidgetRecovered,
-  MeasureRecovered
+  Measure
 } from './home-view-lib.ts'
 
 /**
@@ -176,7 +176,7 @@ export const homeViewMapInitMethods = defineRecoveredMethods({
    */
   initMap() {
     const isPreview = window.__MBS_RECOVERED_PREVIEW__ === true
-    const viewer = new ViewerRecovered('map', {
+    const viewer = new Viewer('map', {
       ionToken:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1MDA4MTA3YS1mZDNmLTQyYzMtYjg3Ny1jN2EzNWNkNzBhNzYiLCJpZCI6MTE0MDgzLCJpYXQiOjE3NzA0NTY5NjZ9.ky7zHUKW9YVxb1LB6jW0PLdv0I9pPIFDdytlLcPUb-Y',
       terrain: { terrainFlag: !isPreview }
@@ -197,7 +197,7 @@ export const homeViewMapInitMethods = defineRecoveredMethods({
       new LayerRecovered().addOnLineMap({ viewer, type: 'google', layer: '卫星' })
     }
 
-    this.widgetObject = new MeasureRecovered()
+    this.widgetObject = new Measure()
     this.widgetObject.drawMea({
       viewer,
       pointStyleType: 0,

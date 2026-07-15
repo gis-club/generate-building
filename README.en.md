@@ -176,7 +176,7 @@ src/
 ├─ lib/viewer/                      # Cesium viewer, camera, terrain, and layers
 ├─ lib/geometry/                    # Building/ground geometry and mask tracing
 ├─ lib/widget/                      # Drawing and measurement widgets
-└─ main.ts                          # Vue/Cesium bootstrap and legacy compatibility
+└─ main.ts                          # Vue/Cesium bootstrap and global runtime dependencies
 
 scripts/fix-cesium-base.mjs         # Post-build Cesium base-path correction
 .github/workflows/deploy-pages.yml  # GitHub Pages deployment
@@ -184,7 +184,7 @@ scripts/fix-cesium-base.mjs         # Post-build Cesium base-path correction
 
 ## Known limitations
 
-- The recovered SDK still uses runtime mixins, but a shared type bridge now declares instance methods and global SDKs; run the full type check when upgrading Cesium, Three.js, or related dependencies.
+- Viewer, Geometry, Measure, and SAM now use explicit class inheritance and direct module imports; run the full type check when upgrading Cesium, Three.js, or related dependencies.
 - General-purpose vision models produce approximate outlines and are not a replacement for professional surveying or a trained segmentation model.
 - The importer is not a general-purpose GeoJSON editor; it primarily supports the project schema and Polygon building features.
 - Very large scenes, complex polygons, and large model catalogs have not been systematically benchmarked.

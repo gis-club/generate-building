@@ -1,21 +1,6 @@
-﻿import samRequestMethods from './sam-request.ts'
-import samRenderMethods from './sam-render.ts'
-import samLonLatMethods from './sam-lonlat.ts'
-import type { RecoveredMethods, RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+import SamRequest from './sam-request.ts'
 
-type SAMAssignedMethods = RecoveredMethods<typeof samRequestMethods> &
-  RecoveredMethods<typeof samRenderMethods> &
-  RecoveredMethods<typeof samLonLatMethods>
+/** SAM 请求、渲染与坐标转换能力。 */
+export class Sam extends SamRequest {}
 
-export interface SAMRecovered extends RecoveredRuntimeContext, SAMAssignedMethods {}
-
-export class SAMRecovered {
-  constructor(options) {
-    samRequestMethods.constructor.call(this, options)
-  }
-}
-
-Object.assign(SAMRecovered.prototype, samRequestMethods, samRenderMethods, samLonLatMethods)
-
-export default SAMRecovered
-
+export default Sam

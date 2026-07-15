@@ -2,11 +2,9 @@
  * 负责解析 SAM 返回数据，并生成轮廓与渲染中间结果。
  */
 
-import {
-  MaskTraceRecovered,
-  GeometryRecovered
-} from '../mbs-sdk-exports-core.ts'
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import MaskTraceRecovered from '../geometry/geometry-mask-trace.ts'
+import Geometry from '../geometry/geometry.ts'
+import SamLonLat from './sam-lonlat.ts'
 
 const MIN_BUILDING_MASK_AREA_RATIO = 0.0002
 const MAX_BUILDING_MASK_AREA_RATIO = 0.18
@@ -39,7 +37,7 @@ function isPlausibleBuildingRegion(tracer, svgPath, imageWidth, imageHeight) {
   return spanX <= MAX_BUILDING_MASK_SPAN_RATIO && spanY <= MAX_BUILDING_MASK_SPAN_RATIO
 }
 
-export const samRenderMethods = defineRecoveredMethods({
+export class SamRender extends SamLonLat {
   handleAllModelResults(results, imageWidth, imageHeight, context) {
     const tracer = new MaskTraceRecovered()
     const polygons = results
@@ -57,7 +55,7 @@ export const samRenderMethods = defineRecoveredMethods({
       .filter((item) => item.svg.length > 0)
 
     context.samLonlats = tracer.canvasToLonlats(context.viewer, polygons)
-    context.myGeometry = new GeometryRecovered()
+    context.myGeometry = new Geometry()
 
     if (context.drawGeoShow) {
       context.updateMyGeometry(0)
@@ -103,7 +101,7 @@ export const samRenderMethods = defineRecoveredMethods({
     }
 
     tracer.loadingHtml(false)
-  },
+  }
 
   handleImageScale(image) {
     const width = image.naturalWidth
@@ -126,14 +124,14 @@ export const samRenderMethods = defineRecoveredMethods({
     }
 
     return { height, width, scale, uploadScale }
-  },
+  }
 
   async getFile(url) {
     const blob = await (await fetch(url)).blob()
     return new File([blob], 'image.jpeg')
   }
-})
+}
 
-export default samRenderMethods
+export default SamRender
 
 

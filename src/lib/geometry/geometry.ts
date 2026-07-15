@@ -1,30 +1,6 @@
-﻿import geometryPrimitiveMethods from './geometry-primitives.ts'
-import geometryGroundMethods from './geometry-ground.ts'
-import geometryUtilsMethods from './geometry-utils.ts'
-import type { RecoveredMethods, RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+import GeometryGround from './geometry-ground.ts'
 
-type GeometryAssignedMethods = RecoveredMethods<typeof geometryPrimitiveMethods> &
-  RecoveredMethods<typeof geometryGroundMethods> &
-  RecoveredMethods<typeof geometryUtilsMethods>
+/** 基础几何与贴地几何能力。 */
+export class Geometry extends GeometryGround {}
 
-export interface GeometryRecovered extends RecoveredRuntimeContext, GeometryAssignedMethods {}
-
-export class GeometryRecovered {
-  declare static GeometryB: typeof import('./geometry-b.ts').default
-
-  constructor() {
-    if (typeof geometryPrimitiveMethods.constructor === 'function') {
-      geometryPrimitiveMethods.constructor.call(this)
-    }
-  }
-}
-
-Object.assign(
-  GeometryRecovered.prototype,
-  geometryPrimitiveMethods,
-  geometryGroundMethods,
-  geometryUtilsMethods
-)
-
-export default GeometryRecovered
-
+export default Geometry

@@ -40,14 +40,14 @@
 - `src/lib/ai/sam-lonlat.ts`
 - `src/lib/ai/sam.ts`
 
-## 统一导出入口
+## 导入方式
 
-- `src/lib/mbs-sdk-exports-core.ts`
-- `src/lib/mbs-sdk-exports-modular.ts`
-- `src/lib/mbs-sdk-exports.ts`
+- Viewer、Geometry、Measure、SAM 等能力直接从各自模块导入。
+- 各能力通过显式类继承组合，不再使用 `Object.assign` 修改原型。
+- 不再提供 `T0` 或 `mbs-sdk-exports*` 兼容聚合对象。
 
 ## 当前状态
 
 - 旧的 Electron 与 recovered 入口文件已从运行链路中移除。
 - 当前 `src/lib` 下保留的是纯前端运行所需的 TS 文件。
-- 页面逻辑通过 `src/views/home/home-view-lib.ts` 与底层库解耦。
+- 页面逻辑通过 `src/views/home/home-view-lib.ts` 直接转出所需的独立模块。

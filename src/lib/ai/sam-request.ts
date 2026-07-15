@@ -10,8 +10,8 @@
  * 当前项目已经改造成纯 Vite + Vue + TypeScript，因此这里统一走 Vite 开发代理，
  * 从而避免浏览器直接请求第三方接口时触发 CORS 限制。
  */
-import { MaskTraceRecovered } from '../mbs-sdk-exports-core.ts'
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import MaskTraceRecovered from '../geometry/geometry-mask-trace.ts'
+import SamRender from './sam-render.ts'
 
 const SAM_PROXY_ENDPOINT = '/sam-api/automatic_masks'
 
@@ -28,8 +28,9 @@ async function requestSamAutomaticMasks(blob) {
   return response.json()
 }
 
-export const samRequestMethods = defineRecoveredMethods({
+export class SamRequest extends SamRender {
   constructor(options) {
+    super()
     this.viewer = options.viewer.viewer
     this.data = options.data
     this.drawGeoShow = options.drawGeoShow
@@ -37,11 +38,11 @@ export const samRequestMethods = defineRecoveredMethods({
     this.samLonlats = null
     this.samError = null
     this.initImg()
-  },
+  }
 
   loadingHtml(show) {
     new MaskTraceRecovered().loadingHtml(show)
-  },
+  }
 
   async initImg() {
     this.loadingHtml(true)
@@ -69,7 +70,7 @@ export const samRequestMethods = defineRecoveredMethods({
       image.height = Math.round(height * scale)
       this.setParmsandQueryModel(width, height, uploadScale, image, null, fileName, false, false)
     }
-  },
+  }
 
   setParmsandQueryModel(width, height, uploadScale, image, prompt, fileName, showPrompt, skipInference) {
     const canvas = document.createElement('canvas')
@@ -101,7 +102,7 @@ export const samRequestMethods = defineRecoveredMethods({
       'image/jpeg',
       1
     )
-  },
+  }
 
   async queryModelReturnTensors(
     blob,
@@ -126,7 +127,7 @@ export const samRequestMethods = defineRecoveredMethods({
       console.error(error)
     }
   }
-})
+}
 
-export default samRequestMethods
+export default SamRequest
 

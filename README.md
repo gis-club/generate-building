@@ -176,7 +176,7 @@ src/
 ├─ lib/viewer/                      # Cesium Viewer 与相机/地形/图层
 ├─ lib/geometry/                    # 建筑、地面几何和轮廓追踪
 ├─ lib/widget/                      # 绘制与测量控件
-└─ main.ts                          # Vue、Cesium 和旧 SDK 兼容入口
+└─ main.ts                          # Vue、Cesium 与全局运行依赖入口
 
 scripts/fix-cesium-base.mjs         # 构建后修正 Cesium 基础路径
 .github/workflows/deploy-pages.yml  # GitHub Pages 自动部署
@@ -184,7 +184,7 @@ scripts/fix-cesium-base.mjs         # 构建后修正 Cesium 基础路径
 
 ## 已知限制
 
-- 从旧工程恢复的动态 SDK 仍采用运行时混入，但已通过统一类型桥接声明实例方法与全局 SDK；升级 Cesium、Three.js 等依赖时仍需执行完整类型检查。
+- Viewer、Geometry、Measure 与 SAM 已改为显式类继承和独立模块导入；升级 Cesium、Three.js 等依赖时仍需执行完整类型检查。
 - 通用视觉大模型输出的是近似建筑轮廓，不等同于专业测绘或经过训练的分割模型。
 - 导入器不是完整的通用 GeoJSON 编辑器，主要支持本项目的数据结构和 Polygon 建筑面。
 - 超大场景、复杂多边形和大量模型尚未进行系统性能基准测试。

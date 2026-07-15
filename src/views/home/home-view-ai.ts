@@ -1,4 +1,4 @@
-﻿import { SAMRecovered } from './home-view-lib.ts'
+﻿import { Sam } from './home-view-lib.ts'
 
 import {
   addOrMergeModels,
@@ -347,7 +347,7 @@ export const homeViewAiMethods = defineRecoveredMethods({
       const dataUrl = window.myViewer.viewer.scene.canvas.toDataURL('image/png')
       this.updateAIRecognitionProgress(24, '地图画面已就绪，正在提交 SAM 任务')
 
-      this.myAIObject = new SAMRecovered({
+      this.myAIObject = new Sam({
         viewer: window.myViewer,
         data: dataUrl,
         drawGeoShow: false,

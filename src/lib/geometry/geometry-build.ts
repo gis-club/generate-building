@@ -3,13 +3,15 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import GeometryUtils from './geometry-utils.ts'
 
 const WALL_PATTERN_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg=='
 
-export const geometryBuildMethods = defineRecoveredMethods({
-  constructor() {},
+export class GeometryBuild extends GeometryUtils {
+  constructor() {
+    super()
+  }
 
   basePolygon(options) {
     if (options.polygonShow == null) {
@@ -24,7 +26,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   updateBasePolygon(options) {
     if (this.nextBasePolygon.ready) {
@@ -32,7 +34,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       this.nextBasePolygon.show = true
       this.basePolygon(options)
     }
-  },
+  }
 
   basePolygonGeo(options) {
     const viewer = options.viewer.viewer
@@ -135,7 +137,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       releaseGeometryInstances: false,
       shadows: options.shadows ? Cesium.ShadowMode.ENABLED : Cesium.ShadowMode.DISABLED
     })
-  },
+  }
 
   basePolygon2(options) {
     const primitive = this.basePolygonGeo2(options)
@@ -145,7 +147,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   basePolygonGeo2(options) {
     const viewer = options.viewer.viewer
@@ -190,7 +192,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       releaseGeometryInstances: false,
       shadows: options.shadows ? Cesium.ShadowMode.ENABLED : Cesium.ShadowMode.DISABLED
     })
-  },
+  }
 
   basePolyline(options) {
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
@@ -201,7 +203,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   updateBasePolyline(options) {
     if (this.nextBasePolyline != null && this.nextBasePolyline.ready) {
@@ -211,7 +213,7 @@ export const geometryBuildMethods = defineRecoveredMethods({
     } else {
       this.basePolyline(options)
     }
-  },
+  }
 
   basePolylineGeo(options) {
     const viewer = options.viewer.viewer
@@ -270,13 +272,13 @@ export const geometryBuildMethods = defineRecoveredMethods({
       asynchronous: false,
       releaseGeometryInstances: false
     })
-  },
+  }
 
   baseWall(options) {
     const primitive = this.baseWallGeo(options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-baseWall_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
   baseWallGeo(options) {
     const geo = options.geo
@@ -333,8 +335,8 @@ export const geometryBuildMethods = defineRecoveredMethods({
       appearance: new Cesium.MaterialAppearance({ material })
     })
   }
-})
+}
 
-export default geometryBuildMethods
+export default GeometryBuild
 
 
