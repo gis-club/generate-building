@@ -3,10 +3,12 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import GeometryUtils from './geometry-utils.ts'
 
-export const geometryPrimitiveMethods = defineRecoveredMethods({
-  constructor() {},
+export class GeometryPrimitives extends GeometryUtils {
+  constructor() {
+    super()
+  }
 
   box(options) {
     const size = options.size
@@ -21,7 +23,7 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
     const primitive = this.commonGeo(geometry, options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-box_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
   sphere(options) {
     const geometry = Cesium.SphereGeometry.createGeometry(
@@ -34,7 +36,7 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
     const primitive = this.commonGeo(geometry, options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-sphere_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
   cylinder(options) {
     const size = options.size
@@ -50,7 +52,7 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
     const primitive = this.commonGeo(geometry, options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-cylinder_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
   plane(options) {
     const geometry = Cesium.PlaneGeometry.createGeometry(
@@ -62,7 +64,7 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
     const primitive = this.commonGeo(geometry, options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-plane_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
   polyline(options) {
     const positions = []
@@ -80,9 +82,9 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
     const primitive = this.commonGeo(geometry, options, '1')
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
     this.GEManage.addPrimitive(`mbs-polyline_${options.signStr}`, primitive, 'PrimitiveCollection')
-  },
+  }
 
-  commonGeo(geometry, options, polylineFlag) {
+  commonGeo(geometry, options, polylineFlag = null) {
     const viewer = options.viewer.viewer
     viewer.scene.postProcessStages.fxaa.enabled = true
 
@@ -142,8 +144,8 @@ export const geometryPrimitiveMethods = defineRecoveredMethods({
       shadows
     })
   }
-})
+}
 
-export default geometryPrimitiveMethods
+export default GeometryPrimitives
 
 

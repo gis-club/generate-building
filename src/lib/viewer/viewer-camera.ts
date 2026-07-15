@@ -2,9 +2,9 @@
  * Viewer 相机与坐标换算能力。
  */
 
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import ViewerTerrain from './viewer-terrain.ts'
 
-export const viewerCameraMethods = defineRecoveredMethods({
+export class ViewerCamera extends ViewerTerrain {
   locationCenter(options) {
     const viewer = this.viewer
     if (options.pos[2] == null) {
@@ -23,7 +23,7 @@ export const viewerCameraMethods = defineRecoveredMethods({
       viewer.scene.camera.lookAt(destination, new Cesium.HeadingPitchRange(heading, pitch, distance))
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY)
     }
-  },
+  }
 
   flyToBoundingSphere(options) {
     const viewer = this.viewer
@@ -39,7 +39,7 @@ export const viewerCameraMethods = defineRecoveredMethods({
       duration: 2,
       offset: new Cesium.HeadingPitchRange(heading, pitch, distance)
     })
-  },
+  }
 
   getBoundingSphere(points) {
     const cartesianPoints = []
@@ -47,7 +47,7 @@ export const viewerCameraMethods = defineRecoveredMethods({
       cartesianPoints.push(Cesium.Cartesian3.fromDegrees(points[index], points[index + 1]))
     }
     return Cesium.BoundingSphere.fromPoints(cartesianPoints)
-  },
+  }
 
   createCustomCamera(options) {
     const scene = this.viewer.scene
@@ -71,7 +71,7 @@ export const viewerCameraMethods = defineRecoveredMethods({
 
     new Cesium.DebugCameraPrimitive({ camera, color: Cesium.Color.RED, show: true })
     return camera
-  },
+  }
 
   createReflectorCamera() {
     const scene = this.viewer.scene
@@ -98,7 +98,7 @@ export const viewerCameraMethods = defineRecoveredMethods({
     })
     scene.primitives.add(primitive)
     return camera
-  },
+  }
 
   toLonLat(cartesian) {
     const cartographic = this.viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian)
@@ -107,13 +107,13 @@ export const viewerCameraMethods = defineRecoveredMethods({
       Cesium.Math.toDegrees(cartographic.latitude),
       cartographic.height
     ]
-  },
+  }
 
   formLonLat(lonlat) {
     return Cesium.Cartesian3.fromDegrees(lonlat[0], lonlat[1], lonlat[2])
   }
-})
+}
 
-export default viewerCameraMethods
+export default ViewerCamera
 
 

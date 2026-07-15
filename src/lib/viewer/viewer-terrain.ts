@@ -2,9 +2,9 @@
  * 自定义地形相关辅助方法。
  */
 
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import ViewerLogo from './viewer-logo.ts'
 
-export const viewerTerrainMethods = defineRecoveredMethods({
+export class ViewerTerrain extends ViewerLogo {
   noiseTerrainProvider(viewer) {
     const terrainProvider = new Cesium.CustomHeightmapTerrainProvider({
       width: 32,
@@ -65,7 +65,7 @@ export const viewerTerrainMethods = defineRecoveredMethods({
     })
 
     viewer.terrainProvider = terrainProvider
-  },
+  }
 
   sineTerrainProviderY(viewer) {
     const terrainProvider = new Cesium.CustomHeightmapTerrainProvider({
@@ -84,7 +84,7 @@ export const viewerTerrainMethods = defineRecoveredMethods({
     })
 
     viewer.terrainProvider = terrainProvider
-  },
+  }
 
   sineTerrainProviderXY(viewer) {
     const terrainProvider = new Cesium.CustomHeightmapTerrainProvider({
@@ -106,8 +106,8 @@ export const viewerTerrainMethods = defineRecoveredMethods({
 
     viewer.terrainProvider = terrainProvider
   }
-})
+}
 
-export default viewerTerrainMethods
+export default ViewerTerrain
 
 

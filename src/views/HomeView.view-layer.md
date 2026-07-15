@@ -29,7 +29,7 @@
   - 负责功能分组聚合：`mapInit`、`drawEdit`、`export`、`ai`。
 
 - `src/views/home/home-view-lib.ts`
-  - 页面层到 `src/lib/mbs-sdk-exports-modular.ts` 的桥接层。
+  - 直接转出 Viewer、Geometry、Measure、SAM 等独立模块。
 
 ## 主要状态来源
 

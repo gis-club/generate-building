@@ -2,9 +2,8 @@
  * 测量标签、角度标签与坐标辅助转换逻辑。
  */
 
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
-
-export const measureLabelMethods = defineRecoveredMethods({
+export class MeasureLabels {
+  [runtimeProperty: string]: any
   addLabel(position, value, type) {
     let text = ''
     if (type === '娴嬭窛' || type === '鍚堣') {
@@ -35,7 +34,7 @@ export const measureLabelMethods = defineRecoveredMethods({
         scaleByDistance: new Cesium.NearFarScalar(15000, 1, 150000, 0.2)
       }
     })
-  },
+  }
 
   addLabelDy(position, text) {
     return this.viewer.entities.add({
@@ -55,7 +54,7 @@ export const measureLabelMethods = defineRecoveredMethods({
         scaleByDistance: new Cesium.NearFarScalar(15000, 1, 150000, 0.2)
       }
     })
-  },
+  }
 
   addLabelPoint(position, text) {
     return this.viewer.entities.add({
@@ -76,7 +75,7 @@ export const measureLabelMethods = defineRecoveredMethods({
         scaleByDistance: new Cesium.NearFarScalar(15000, 1, 150000, 0.2)
       }
     })
-  },
+  }
 
   addLabelPointAngle(position, text) {
     return this.viewer.entities.add({
@@ -98,7 +97,7 @@ export const measureLabelMethods = defineRecoveredMethods({
         scaleByDistance: new Cesium.NearFarScalar(15000, 1, 150000, 0.2)
       }
     })
-  },
+  }
 
   setPosXYZ(positions, current) {
     const start = positions[0]
@@ -149,7 +148,7 @@ export const measureLabelMethods = defineRecoveredMethods({
       highHeight
     ])
     this.posXYZFlag = true
-  },
+  }
 
   toLonLat(cartesian) {
     const cartographic = this.viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian)
@@ -158,11 +157,11 @@ export const measureLabelMethods = defineRecoveredMethods({
       Cesium.Math.toDegrees(cartographic.latitude),
       cartographic.height
     ]
-  },
+  }
 
   formLonLat(lonlat) {
     return Cesium.Cartesian3.fromDegrees(lonlat[0], lonlat[1], lonlat[2])
-  },
+  }
 
   getMidPointLonLat(start, end) {
     const a = this.toLonLat(start)
@@ -188,8 +187,8 @@ export const measureLabelMethods = defineRecoveredMethods({
 
     return { midPoint: midpoint, distance }
   }
-})
+}
 
-export default measureLabelMethods
+export default MeasureLabels
 
 

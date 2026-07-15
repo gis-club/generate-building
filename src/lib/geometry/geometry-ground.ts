@@ -3,12 +3,11 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
-import {
-  defineRecoveredMethods,
-  type RecoveredRuntimeContext
-} from '../recovered-sdk-types.ts'
+import GeometryPrimitives from './geometry-primitives.ts'
 
-export const geometryGroundMethods = defineRecoveredMethods({
+type GeometryOptions = Record<string, any>
+
+export class GeometryGround extends GeometryPrimitives {
   groundLine(options) {
     const primitive = this.commonGroundLineGeo(options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
@@ -17,7 +16,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   commonGroundLineGeo(options) {
     const viewer = options.viewer.viewer
@@ -76,7 +75,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       asynchronous: false,
       releaseGeometryInstances: false
     })
-  },
+  }
 
   groundLine2(options) {
     const primitive = this.commonGroundLineGeo2(options)
@@ -87,7 +86,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   updateGroundLine2(options) {
     if (this.nextLine2Primitive.ready) {
@@ -95,7 +94,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       this.nextLine2Primitive.show = true
       this.groundLine2(options)
     }
-  },
+  }
 
   commonGroundLineGeo2(options) {
     const viewer = options.viewer.viewer
@@ -156,9 +155,9 @@ export const geometryGroundMethods = defineRecoveredMethods({
       releaseGeometryInstances: false,
       shadows
     })
-    ;(primitive as unknown as RecoveredRuntimeContext).id = 'mask'
+    ;(primitive as unknown as GeometryOptions).id = 'mask'
     return primitive
-  },
+  }
 
   groundPolygon(options) {
     const primitive = this.commonGroundGeo(options)
@@ -168,7 +167,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   commonGroundGeo(options) {
     const viewer = options.viewer.viewer
@@ -210,7 +209,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       asynchronous: false,
       releaseGeometryInstances: false
     })
-  },
+  }
 
   groundPolygon2(options) {
     const primitive = this.commonGroundGeo2(options)
@@ -221,7 +220,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       primitive,
       'PrimitiveCollection'
     )
-  },
+  }
 
   updateGroundPolygon2(options) {
     if (this.nextPoly2Primitive.ready) {
@@ -229,7 +228,7 @@ export const geometryGroundMethods = defineRecoveredMethods({
       this.nextPoly2Primitive.show = true
       this.groundPolygon2(options)
     }
-  },
+  }
 
   commonGroundGeo2(options) {
     const viewer = options.viewer.viewer
@@ -271,11 +270,11 @@ export const geometryGroundMethods = defineRecoveredMethods({
       releaseGeometryInstances: false,
       shadows: options.shadows ? Cesium.ShadowMode.ENABLED : Cesium.ShadowMode.DISABLED
     })
-    ;(primitive as unknown as RecoveredRuntimeContext).id = 'mask'
+    ;(primitive as unknown as GeometryOptions).id = 'mask'
     return primitive
   }
-})
+}
 
-export default geometryGroundMethods
+export default GeometryGround
 
 

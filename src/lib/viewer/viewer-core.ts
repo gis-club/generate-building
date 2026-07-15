@@ -2,13 +2,11 @@
  * Viewer 核心初始化逻辑。
  */
 
-import {
-  defineRecoveredMethods,
-  type RecoveredRuntimeContext
-} from '../recovered-sdk-types.ts'
+type ViewerOptions = Record<string, any>
 
-export const viewerCoreMethods = defineRecoveredMethods({
-  constructor(container, options: RecoveredRuntimeContext = {}) {
+export class ViewerCore {
+  [runtimeProperty: string]: any
+  constructor(container, options: ViewerOptions = {}) {
     window.Cesium.Ion.defaultAccessToken = options.ionToken
 
     this.terrain = options.terrain
@@ -34,7 +32,7 @@ export const viewerCoreMethods = defineRecoveredMethods({
     this.timeline = options.timeline == null ? false : options.timeline
     this.shadows = options.shadows == null ? true : options.shadows
     this.viewer = this.initMap(container)
-  },
+  }
 
   initMap(container) {
     const ellipsoidRadii = [6378137, 6378137, 6356752314245179e-9]
@@ -92,7 +90,7 @@ export const viewerCoreMethods = defineRecoveredMethods({
 
     if (this.backGroundColor != null) {
       if (viewer.scene.skyBox) {
-        ;(viewer.scene.skyBox as unknown as RecoveredRuntimeContext).show = false
+        ;(viewer.scene.skyBox as unknown as Record<string, any>).show = false
       }
       viewer.scene.sun.show = false
       viewer.scene.moon.show = false
@@ -114,9 +112,9 @@ export const viewerCoreMethods = defineRecoveredMethods({
       this.sineTerrainProviderXY(viewer)
     }
     return viewer
-  },
+  }
 
-  updateViewer(options: RecoveredRuntimeContext = {}) {
+  updateViewer(options: ViewerOptions = {}) {
     const viewer = this.viewer
     viewer.scene.globe.show = options.globeFlag
     viewer.scene.skyAtmosphere.show = options.globeFlag
@@ -128,8 +126,8 @@ export const viewerCoreMethods = defineRecoveredMethods({
       viewer.scene.backgroundColor = Cesium.Color.fromCssColorString(options.backGroundColor)
     }
   }
-})
+}
 
-export default viewerCoreMethods
+export default ViewerCore
 
 

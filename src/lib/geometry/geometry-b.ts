@@ -1,22 +1,8 @@
-﻿import geometryBuildMethods from './geometry-build.ts'
-import geometryUtilsMethods from './geometry-utils.ts'
-import type { RecoveredMethods, RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+import GeometryBuild from './geometry-build.ts'
+
 export { MaskTraceRecovered } from './geometry-mask-trace.ts'
 
-type GeometryBAssignedMethods = RecoveredMethods<typeof geometryBuildMethods> &
-  RecoveredMethods<typeof geometryUtilsMethods>
+/** 建筑几何生成能力。 */
+export class GeometryBuilder extends GeometryBuild {}
 
-export interface GeometryBRecovered extends RecoveredRuntimeContext, GeometryBAssignedMethods {}
-
-export class GeometryBRecovered {
-  constructor() {
-    if (typeof geometryBuildMethods.constructor === 'function') {
-      geometryBuildMethods.constructor.call(this)
-    }
-  }
-}
-
-Object.assign(GeometryBRecovered.prototype, geometryBuildMethods, geometryUtilsMethods)
-
-export default GeometryBRecovered
-
+export default GeometryBuilder

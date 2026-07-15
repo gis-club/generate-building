@@ -2,7 +2,7 @@
  * 页面侧边工具条 UI 基础能力。
  */
 
-import { MeasureRecovered } from '../mbs-sdk-exports-core.ts'
+import Measure from './measure.ts'
 
 import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
 
@@ -53,7 +53,7 @@ export class BaseWidgetRecovered {
 
   createWidget() {
     const viewer = this.viewer.viewer
-    const measure = new MeasureRecovered()
+    const measure = new Measure()
     measure.drawMea({
       viewer: this.viewer,
       pointStyleType: 0,

@@ -1,12 +1,11 @@
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
-
-export const geometryUtilsMethods = defineRecoveredMethods({
+export class GeometryUtils {
+  [runtimeProperty: string]: any
   getRandomHexColor() {
     const red = Math.floor(Math.random() * 256).toString(16)
     const green = Math.floor(Math.random() * 256).toString(16)
     const blue = Math.floor(Math.random() * 256).toString(16)
     return `#${red.padStart(2, '0')}${green.padStart(2, '0')}${blue.padStart(2, '0')}`
-  },
+  }
 
   updateMatrix(options) {
     const rx = Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(options.rx))
@@ -26,7 +25,7 @@ export const geometryUtilsMethods = defineRecoveredMethods({
       new Cesium.Cartesian3(options.scaleX, options.scaleY, options.scaleZ)
     )
     return Cesium.Matrix4.multiply(matrix, scale, matrix)
-  },
+  }
 
   hexToRgba(hex, alpha) {
     let value = hex
@@ -43,6 +42,6 @@ export const geometryUtilsMethods = defineRecoveredMethods({
     const blue = parseInt(value.slice(4, 6), 16)
     return new Cesium.Color(red / 255, green / 255, blue / 255, alpha)
   }
-})
+}
 
-export default geometryUtilsMethods
+export default GeometryUtils

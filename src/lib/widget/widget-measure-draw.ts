@@ -2,10 +2,12 @@
  * 测距、测面与绘制控件实现。
  */
 
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import MeasureLabels from './widget-measure-labels.ts'
 
-export const measureDrawMethods = defineRecoveredMethods({
-  constructor() {},
+export class MeasureDraw extends MeasureLabels {
+  constructor() {
+    super()
+  }
 
   drawMea(options) {
     this.viewer = options.viewer.viewer
@@ -41,7 +43,7 @@ export const measureDrawMethods = defineRecoveredMethods({
     this.polygonOpacity = options.polygonOpacity == null ? 0.4 : options.polygonOpacity
     this.polygonEndFlag = false
     this.posList = []
-  },
+  }
 
   clearAllMea() {
     const viewer = this.viewer
@@ -77,13 +79,13 @@ export const measureDrawMethods = defineRecoveredMethods({
     if (posList != null) {
       posList.innerHTML = ''
     }
-  },
+  }
 
   drawLineMeaXYZStart(options) {
     this.clearAllMea()
     this.pointNum = 0
     this.drawMeaXYZCommon(options.type)
-  },
+  }
 
   drawMeaXYZCommon(type) {
     this.handler = new Cesium.ScreenSpaceEventHandler(this.canvas)
@@ -146,19 +148,19 @@ export const measureDrawMethods = defineRecoveredMethods({
         }
       }
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
-  },
+  }
 
   drawLineMeaStart(options) {
     this.clearAllMea()
     this.type = options.type == null ? 0 : options.type
     this.drawMeaCommon('Line')
-  },
+  }
 
   drawPolygonMeaStart(options) {
     this.clearAllMea()
     this.type = options.type == null ? 0 : options.type
     this.drawMeaCommon('Polygon')
-  },
+  }
 
   drawMeaCommon(mode) {
     const viewer = this.viewer
@@ -412,7 +414,7 @@ export const measureDrawMethods = defineRecoveredMethods({
 
       this.handler.destroy()
     }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
-  },
+  }
 
   createPoint(position) {
     if (this.pointStyleType === 0) {
@@ -439,7 +441,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         scaleByDistance: new Cesium.NearFarScalar(15000, 1, 150000, 0.2)
       }
     })
-  },
+  }
 
   createTemporaryShape() {
     let material = null
@@ -474,7 +476,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         material
       }
     })
-  },
+  }
 
   createTemporaryShapeAngle() {
     const material = new Cesium.PolylineDashMaterialProperty({
@@ -506,7 +508,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         material
       }
     })
-  },
+  }
 
   createTempPolygon() {
     this.polygonEntity = this.viewer.entities.add({
@@ -518,7 +520,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         )
       }
     })
-  },
+  }
 
   createTemporaryShapeXYZ() {
     let material = null
@@ -553,7 +555,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         material
       }
     })
-  },
+  }
 
   createTempPolygonXYZ() {
     this.polygonXYZEntity = this.viewer.entities.add({
@@ -566,7 +568,7 @@ export const measureDrawMethods = defineRecoveredMethods({
         perPositionHeight: true
       }
     })
-  },
+  }
 
   getLength(start, end) {
     const startCartographic = Cesium.Cartographic.fromCartesian(start)
@@ -574,7 +576,7 @@ export const measureDrawMethods = defineRecoveredMethods({
     const geodesic = new Cesium.EllipsoidGeodesic()
     geodesic.setEndPoints(startCartographic, endCartographic)
     return geodesic.surfaceDistance
-  },
+  }
 
   getMidpoint(start, end) {
     const startCartographic = Cesium.Cartographic.fromCartesian(start)
@@ -582,7 +584,7 @@ export const measureDrawMethods = defineRecoveredMethods({
     const geodesic = new Cesium.EllipsoidGeodesic()
     geodesic.setEndPoints(startCartographic, endCartographic)
     return Cesium.Ellipsoid.WGS84.cartographicToCartesian(geodesic.interpolateUsingFraction(0.5))
-  },
+  }
 
   bearing(start, end) {
     const a = Cesium.Cartographic.fromCartesian(start)
@@ -596,7 +598,7 @@ export const measureDrawMethods = defineRecoveredMethods({
       angle += Math.PI * 2
     }
     return angle
-  },
+  }
 
   pointAngle(a, b, c) {
     let angle = this.bearing(b, a) - this.bearing(b, c)
@@ -604,7 +606,7 @@ export const measureDrawMethods = defineRecoveredMethods({
       angle += Math.PI * 2
     }
     return angle
-  },
+  }
 
   getArea(positions) {
     let area = 0
@@ -618,8 +620,8 @@ export const measureDrawMethods = defineRecoveredMethods({
     }
     return Math.abs(parseFloat((area / 1000000).toFixed(2)))
   }
-})
+}
 
-export default measureDrawMethods
+export default MeasureDraw
 
 

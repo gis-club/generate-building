@@ -31,7 +31,7 @@ declare global {
     Mx: (options?: LegacyMessageOptions) => void
     realWidth?: number
     realHeight?: number
-    myViewer?: import('./lib/viewer/viewer.ts').ViewerRecovered
+    myViewer?: import('./lib/viewer/viewer.ts').Viewer
     Cesium: typeof import('cesium')
     turf: typeof import('@turf/turf')
     decomp: typeof import('poly-decomp')
@@ -42,7 +42,7 @@ declare global {
   const yge: Window['yge']
   const O9: Window['O9']
   const Mx: Window['Mx']
-  const myViewer: import('./lib/viewer/viewer.ts').ViewerRecovered
+  const myViewer: import('./lib/viewer/viewer.ts').Viewer
   const Cesium: Window['Cesium']
   const turf: Window['turf']
   const decomp: Window['decomp']

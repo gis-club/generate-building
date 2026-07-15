@@ -1,4 +1,4 @@
-﻿import { GEManageRecovered, GeometryBRecovered } from './home-view-lib.ts'
+﻿import { GEManageRecovered, GeometryBuilder } from './home-view-lib.ts'
 
 /**
  * 导入、导出和三维预览相关逻辑。
@@ -187,7 +187,7 @@ export const homeViewExportMethods = defineRecoveredMethods({
       tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT
       const primitive = viewer.scene.primitives.add(tileset)
       if (matrix != null) {
-        primitive._root.transform = new GeometryBRecovered().updateMatrix(matrix)
+        primitive._root.transform = new GeometryBuilder().updateMatrix(matrix)
       }
       viewer.flyTo(primitive)
       console.log('All tiles are loaded，加载完成')

@@ -1,6 +1,6 @@
 ﻿import {
   GEManageRecovered,
-  GeometryBRecovered,
+  GeometryBuilder,
   GEPickRecovered
 } from './home-view-lib.ts'
 
@@ -139,7 +139,7 @@ export const homeViewDrawEditMethods = defineRecoveredMethods({
     }
 
     if (this.myGeometry == null) {
-      this.myGeometry = new GeometryBRecovered()
+      this.myGeometry = new GeometryBuilder()
     }
 
     const instancesArr = buildInstancesArr(this.finalData)

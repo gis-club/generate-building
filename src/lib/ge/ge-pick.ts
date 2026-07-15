@@ -1,8 +1,6 @@
-﻿import {
-  GeometryRecovered,
-  GeometryBRecovered,
-  GEManageRecovered
-} from '../mbs-sdk-exports-core.ts'
+﻿import Geometry from '../geometry/geometry.ts'
+import GeometryBuilder from '../geometry/geometry-b.ts'
+import GEManageRecovered from './ge-manage.ts'
 
 import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
 
@@ -51,7 +49,7 @@ export class GEPickRecovered {
     const oldPicked = this.oldPicked
     const pos = this.pos
     const myViewer = this.myViewer
-    const geometry = new GeometryRecovered()
+    const geometry = new Geometry()
     const manage = new GEManageRecovered(myViewer)
 
     if (
@@ -104,7 +102,7 @@ export class GEPickRecovered {
     const oldPicked = this.oldPicked
     const pos = this.pos
     const myViewer = this.myViewer
-    const geometryB = new GeometryBRecovered()
+    const geometryB = new GeometryBuilder()
     const manage = new GEManageRecovered(myViewer)
 
     if (oldPicked.id != null) {

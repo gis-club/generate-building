@@ -1,31 +1,6 @@
-﻿import viewerCoreMethods from './viewer-core.ts'
-import viewerLogoMethods from './viewer-logo.ts'
-import viewerTerrainMethods from './viewer-terrain.ts'
-import viewerCameraMethods from './viewer-camera.ts'
-import type { RecoveredMethods, RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+import ViewerCamera from './viewer-camera.ts'
 
-type ViewerAssignedMethods = RecoveredMethods<typeof viewerCoreMethods> &
-  RecoveredMethods<typeof viewerLogoMethods> &
-  RecoveredMethods<typeof viewerTerrainMethods> &
-  RecoveredMethods<typeof viewerCameraMethods>
+/** 完整 Viewer，能力通过显式继承链组合。 */
+export class Viewer extends ViewerCamera {}
 
-export interface ViewerRecovered extends RecoveredRuntimeContext, ViewerAssignedMethods {}
-
-export class ViewerRecovered {
-  declare static Layer: typeof import('./layer.ts').default
-
-  constructor(container, options) {
-    viewerCoreMethods.constructor.call(this, container, options)
-  }
-}
-
-Object.assign(
-  ViewerRecovered.prototype,
-  viewerCoreMethods,
-  viewerLogoMethods,
-  viewerTerrainMethods,
-  viewerCameraMethods
-)
-
-export default ViewerRecovered
-
+export default Viewer

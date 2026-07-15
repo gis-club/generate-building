@@ -5,9 +5,9 @@
 const DEFAULT_LOGO_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg=='
 
-import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+import ViewerCore from './viewer-core.ts'
 
-export const viewerLogoMethods = defineRecoveredMethods({
+export class ViewerLogo extends ViewerCore {
   addLogo(viewer) {
     const textImage = this.drawLogo()
     const logoImage = DEFAULT_LOGO_DATA_URL
@@ -63,7 +63,7 @@ export const viewerLogoMethods = defineRecoveredMethods({
     viewer.scene.preRender.addEventListener(() => {
       quad.material.uniforms.time += 0.01
     })
-  },
+  }
 
   drawLogo() {
     const canvas = document.createElement('canvas')
@@ -92,8 +92,8 @@ export const viewerLogoMethods = defineRecoveredMethods({
     image.src = canvas.toDataURL('image/png')
     return image
   }
-})
+}
 
-export default viewerLogoMethods
+export default ViewerLogo
 
 
