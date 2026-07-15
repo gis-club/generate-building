@@ -6,12 +6,13 @@ import {
   PrimitiveManagerRecovered,
   GELabelRecovered
 } from '../mbs-sdk-exports-core.ts'
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
 
 const SAM_MARKER_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#1677ff" d="M24 2c-8.284 0-15 6.716-15 15 0 10.5 15 29 15 29s15-18.5 15-29c0-8.284-6.716-15-15-15z"/><circle cx="24" cy="17" r="6.5" fill="#ffffff"/></svg>',
 )}`
 
-export const samLonLatMethods = {
+export const samLonLatMethods = defineRecoveredMethods({
   updateMyGeometry(mode) {
     const labelManager = new GELabelRecovered()
 
@@ -84,7 +85,7 @@ export const samLonLatMethods = {
       instancesArr: polygonInstances
     })
   }
-}
+})
 
 export default samLonLatMethods
 

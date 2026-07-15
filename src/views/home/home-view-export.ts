@@ -4,7 +4,22 @@
  * 导入、导出和三维预览相关逻辑。
  * 这里保留 GeoJSON 导出和 glTF 预览能力。
  */
-export const homeViewExportMethods = {
+import { defineRecoveredMethods } from '../../lib/recovered-sdk-types.ts'
+import {
+  AmbientLight,
+  ExtrudeGeometry,
+  Mesh,
+  MeshPhongMaterial,
+  PerspectiveCamera,
+  PointLight,
+  Scene,
+  Shape,
+  WebGLRenderer
+} from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
+
+export const homeViewExportMethods = defineRecoveredMethods({
   /**
    * 生成时间戳文件名，避免多次导出重名。
    */
@@ -140,7 +155,7 @@ export const homeViewExportMethods = {
     const startLon = turf.point([center[0], center[1]])
     const endLon = turf.point([lonlat[0], center[1]])
     const endLat = turf.point([center[0], lonlat[1]])
-    const options = { units: 'meters' }
+    const options = { units: 'meters' as const }
 
     let x = turf.distance(startLon, endLon, options)
     let y = turf.distance(startLon, endLat, options)
@@ -167,10 +182,9 @@ export const homeViewExportMethods = {
       debugShowViewerRequestVolume: false,
       debugShowRenderingStatistics: false,
       debugShowMemoryUsage: false,
-      debugShowUrl: false,
-      colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
-      colorBlendAmountEnabled: Cesium.ColorBlendMode.HIGHLIGHT
+      debugShowUrl: false
     }).then((tileset) => {
+      tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT
       const primitive = viewer.scene.primitives.add(tileset)
       if (matrix != null) {
         primitive._root.transform = new GeometryBRecovered().updateMatrix(matrix)
@@ -181,8 +195,8 @@ export const homeViewExportMethods = {
     })
   },
   async initThree(geoJson) {
-    const scene = new U4()
-    const camera = new ou(
+    const scene = new Scene()
+    const camera = new PerspectiveCamera(
       75,
       this.$refs.threeContainer.offsetWidth / this.$refs.threeContainer.offsetHeight,
       0.1,
@@ -191,21 +205,21 @@ export const homeViewExportMethods = {
     camera.position.set(100, 400, 400)
     camera.lookAt(0, 0, 0)
 
-    const renderer = new t7e()
+    const renderer = new WebGLRenderer()
     renderer.setSize(this.$refs.threeContainer.offsetWidth, this.$refs.threeContainer.offsetHeight)
     this.renderer = renderer
     this.$refs.threeContainer.appendChild(renderer.domElement)
 
     this.processGeoJSON(geoJson, scene)
 
-    const light = new s1e(16777215, 2000000, 50000)
+    const light = new PointLight(16777215, 2000000, 50000)
     light.position.set(0, 100, 0)
     scene.add(light)
 
-    const ambient = new o1e(4210752, 100)
+    const ambient = new AmbientLight(4210752, 100)
     scene.add(ambient)
 
-    const controls = new M7e(camera, renderer.domElement)
+    const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.25
     controls.enableZoom = true
@@ -237,15 +251,15 @@ export const homeViewExportMethods = {
         feature.geometry,
         feature.properties.extrudeHeight
       )
-      const material = new e1e({ color: feature.properties.color })
-      const mesh = new br(geometry, material)
+      const material = new MeshPhongMaterial({ color: feature.properties.color })
+      const mesh = new Mesh(geometry, material)
       mesh.rotation.x = -Math.PI / 2
       scene.add(mesh)
     })
   },
   createExtrudeGeometry(geometry, depth) {
     const shape = this.convertGeoJSONToShape(geometry)
-    return new g3(shape, {
+    return new ExtrudeGeometry(shape, {
       steps: 1,
       depth,
       bevelEnabled: false,
@@ -256,7 +270,7 @@ export const homeViewExportMethods = {
     })
   },
   convertGeoJSONToShape(geometry) {
-    const shape = new rM()
+    const shape = new Shape()
     const coordinates =
       geometry.type === 'Polygon' ? geometry.coordinates[0] : geometry.coordinates[0][0]
 
@@ -277,7 +291,7 @@ export const homeViewExportMethods = {
     if (geoJson == null) return
 
     this.initThree(geoJson)
-    new vf().parse(
+    new GLTFExporter().parse(
       this.scene,
       (gltf) => {
         const blob = new Blob([JSON.stringify(gltf)], { type: 'application/json' })
@@ -309,5 +323,5 @@ export const homeViewExportMethods = {
     this.renderer.domElement = null
     this.$refs.threeContainer.children[0].remove()
   }
-}
+})
 

@@ -2,8 +2,13 @@
  * Viewer 核心初始化逻辑。
  */
 
-export const viewerCoreMethods = {
-  constructor(container, options = {}) {
+import {
+  defineRecoveredMethods,
+  type RecoveredRuntimeContext
+} from '../recovered-sdk-types.ts'
+
+export const viewerCoreMethods = defineRecoveredMethods({
+  constructor(container, options: RecoveredRuntimeContext = {}) {
     window.Cesium.Ion.defaultAccessToken = options.ionToken
 
     this.terrain = options.terrain
@@ -33,9 +38,12 @@ export const viewerCoreMethods = {
 
   initMap(container) {
     const ellipsoidRadii = [6378137, 6378137, 6356752314245179e-9]
-    Cesium.Ellipsoid.WGS84 = Object.freeze(
-      new Cesium.Ellipsoid(ellipsoidRadii[0], ellipsoidRadii[1], ellipsoidRadii[2])
-    )
+    Object.defineProperty(Cesium.Ellipsoid, 'WGS84', {
+      configurable: true,
+      value: Object.freeze(
+        new Cesium.Ellipsoid(ellipsoidRadii[0], ellipsoidRadii[1], ellipsoidRadii[2])
+      )
+    })
 
     let terrainProvider = null
     if (
@@ -61,14 +69,13 @@ export const viewerCoreMethods = {
       navigationInstructionsInitiallyVisible: false,
       navigationHelpButton: false,
       selectionIndicator: false,
-      shadows: this.shadows,
-      contextOptions: { requestWebgl2: true }
+      shadows: this.shadows
     })
 
     viewer.scene.verticalExaggeration = this.terrain.terrainScale
     viewer.scene.postProcessStages.fxaa.enabled = true
     viewer.scene.globe.depthTestAgainstTerrain = true
-    viewer._cesiumWidget._creditContainer.style.display = 'none'
+    ;(viewer.cesiumWidget.creditContainer as HTMLElement).style.display = 'none'
     viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
       Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
     )
@@ -84,7 +91,9 @@ export const viewerCoreMethods = {
     }
 
     if (this.backGroundColor != null) {
-      viewer.scene.skyBox.show = false
+      if (viewer.scene.skyBox) {
+        ;(viewer.scene.skyBox as unknown as RecoveredRuntimeContext).show = false
+      }
       viewer.scene.sun.show = false
       viewer.scene.moon.show = false
       viewer.scene.backgroundColor = Cesium.Color.fromCssColorString(this.backGroundColor)
@@ -107,7 +116,7 @@ export const viewerCoreMethods = {
     return viewer
   },
 
-  updateViewer(options = {}) {
+  updateViewer(options: RecoveredRuntimeContext = {}) {
     const viewer = this.viewer
     viewer.scene.globe.show = options.globeFlag
     viewer.scene.skyAtmosphere.show = options.globeFlag
@@ -119,7 +128,7 @@ export const viewerCoreMethods = {
       viewer.scene.backgroundColor = Cesium.Color.fromCssColorString(options.backGroundColor)
     }
   }
-}
+})
 
 export default viewerCoreMethods
 

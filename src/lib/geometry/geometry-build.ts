@@ -3,11 +3,12 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
 
 const WALL_PATTERN_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg=='
 
-export const geometryBuildMethods = {
+export const geometryBuildMethods = defineRecoveredMethods({
   constructor() {},
 
   basePolygon(options) {
@@ -230,7 +231,6 @@ export const geometryBuildMethods = {
     for (let index = 0; index < options.instancesArr.length; index += 1) {
       const item = options.instancesArr[index]
       const geometry = new Cesium.GroundPolylineGeometry({
-        vertexFormat,
         positions: Cesium.Cartesian3.fromDegreesArray(item.pos.flat(2)),
         width: options.lineWidth || 3
       })
@@ -288,8 +288,8 @@ export const geometryBuildMethods = {
       geometry: Cesium.WallGeometry.fromConstantHeights({
         positions: Cesium.Cartesian3.fromDegreesArray(geo.pos),
         maximumHeight: geo.maxHeight,
-        minimumHeights: geo.minHeight,
-        vertexFormat: Cesium.MaterialAppearance.VERTEX_FORMAT
+        minimumHeight: geo.minHeight,
+        vertexFormat: Cesium.MaterialAppearance.MaterialSupport.TEXTURED.vertexFormat
       })
     })
 
@@ -333,7 +333,7 @@ export const geometryBuildMethods = {
       appearance: new Cesium.MaterialAppearance({ material })
     })
   }
-}
+})
 
 export default geometryBuildMethods
 

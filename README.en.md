@@ -184,7 +184,7 @@ scripts/fix-cesium-base.mjs         # Post-build Cesium base-path correction
 
 ## Known limitations
 
-- The app still contains dynamically mixed-in SDK code recovered from a legacy project; several modules do not have complete type declarations.
+- The recovered SDK still uses runtime mixins, but a shared type bridge now declares instance methods and global SDKs; run the full type check when upgrading Cesium, Three.js, or related dependencies.
 - General-purpose vision models produce approximate outlines and are not a replacement for professional surveying or a trained segmentation model.
 - The importer is not a general-purpose GeoJSON editor; it primarily supports the project schema and Polygon building features.
 - Very large scenes, complex polygons, and large model catalogs have not been systematically benchmarked.

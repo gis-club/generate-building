@@ -1,28 +1,53 @@
-﻿/// <reference types="vite/client" />
+/// <reference types="vite/client" />
+
+interface LegacyApiResponse<T = unknown> {
+  code: number
+  data?: T
+  message?: string
+}
+
+interface LegacyLicenseData {
+  id?: string
+  endTime?: string
+  isTry?: boolean | number
+  errorCode?: string
+  error?: string
+}
+
+type LegacyMessageType = 'success' | 'warning' | 'info' | 'error' | 'primary'
+
+interface LegacyMessageOptions {
+  type?: LegacyMessageType
+  title?: string
+  message?: string
+}
 
 declare global {
   interface Window {
     __MBS_RECOVERED_PREVIEW__: boolean
     CESIUM_BASE_URL?: string
-    yge: (url: string, payload?: unknown) => Promise<any>
+    yge: (url: string, payload?: unknown) => Promise<LegacyApiResponse<LegacyLicenseData>>
     O9: <T>(value: T) => T
-    Mx: (options?: { type?: string; title?: string; message?: string }) => void
+    Mx: (options?: LegacyMessageOptions) => void
     realWidth?: number
     realHeight?: number
-    myViewer?: any
-    Cesium: any
-    turf: any
-    decomp: any
-    LZString: any
-    proj4: any
+    myViewer?: import('./lib/viewer/viewer.ts').ViewerRecovered
+    Cesium: typeof import('cesium')
+    turf: typeof import('@turf/turf')
+    decomp: typeof import('poly-decomp')
+    LZString: typeof import('lz-string').default
+    proj4: typeof import('proj4').default
   }
 
-  const myViewer: any
-  const Cesium: any
-  const turf: any
-  const decomp: any
-  const LZString: any
-  const proj4: any
+  const yge: Window['yge']
+  const O9: Window['O9']
+  const Mx: Window['Mx']
+  const myViewer: import('./lib/viewer/viewer.ts').ViewerRecovered
+  const Cesium: Window['Cesium']
+  const turf: Window['turf']
+  const decomp: Window['decomp']
+  const LZString: Window['LZString']
+  const proj4: Window['proj4']
 }
 
 export {}

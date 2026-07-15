@@ -86,7 +86,9 @@ function buildPolylinePositions(lonlats = []) {
   return lonlats.map((point) => Cesium.Cartesian3.fromDegrees(point[0], point[1], point[2] || 0))
 }
 
-export const homeViewDrawEditMethods = {
+import { defineRecoveredMethods } from '../../lib/recovered-sdk-types.ts'
+
+export const homeViewDrawEditMethods = defineRecoveredMethods({
   /**
    * 取消当前绘制流程，并回收草稿数据。
    */
@@ -698,6 +700,6 @@ export const homeViewDrawEditMethods = {
 
     return [longitude, latitude, height]
   }
-}
+})
 
 

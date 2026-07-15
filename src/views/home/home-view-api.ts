@@ -5,12 +5,13 @@
  * 因此这里不再依赖 preload 或主进程消息，而是直接在浏览器环境下初始化地图和页面状态。
  */
 const checkBuildLicense = (payload) => yge('/tools/tools_building/getCheckBuild', payload)
+import { defineRecoveredMethods } from '../../lib/recovered-sdk-types.ts'
 
 /**
  * 首页生命周期。
  * 纯前端模式下：created / beforeDestroy 仅保留空壳兼容；mounted 时直接进入本地预览流程。
  */
-export const homeViewLifecycleHooks = {
+export const homeViewLifecycleHooks = defineRecoveredMethods({
   created() {},
   beforeDestroy() {},
   mounted() {
@@ -30,13 +31,13 @@ export const homeViewLifecycleHooks = {
       }
     })
   }
-}
+})
 
 /**
  * 兼容保留的授权初始化方法。
  * 如果未来重新接入在线授权服务，页面仍然可以通过该方法切换回服务端校验模式。
  */
-export const homeViewApiMethods = {
+export const homeViewApiMethods = defineRecoveredMethods({
   initRSA() {
     const info = this.infoArr
     if (info == null) return
@@ -85,4 +86,4 @@ export const homeViewApiMethods = {
       this.initMapAll(canUse)
     })
   }
-}
+})

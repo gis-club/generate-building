@@ -111,7 +111,9 @@ function isPlausibleVisionOutline(points) {
   return spanX <= 0.8 && spanY <= 0.8
 }
 
-export const homeViewAiMethods = {
+import { defineRecoveredMethods } from '../../lib/recovered-sdk-types.ts'
+
+export const homeViewAiMethods = defineRecoveredMethods({
   startAIRecognitionProgress(stage = '正在准备地图画面') {
     this.aiProgress = 8
     this.aiProgressStage = stage
@@ -440,5 +442,5 @@ export const homeViewAiMethods = {
     const canvas = document.getElementById('sam_canvas')
     if (canvas) canvas.remove()
   }
-}
+})
 

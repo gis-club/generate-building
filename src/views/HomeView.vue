@@ -1,121 +1,141 @@
 <template>
-  <main class="home-view" @click="showInfo($event, 0)">
-    <div class="home-view__ambient home-view__ambient--teal" />
-    <div class="home-view__ambient home-view__ambient--violet" />
-    <div class="home-view__mesh" />
+  <el-container class="home-view" :class="`theme-${themeMode}`" direction="vertical" @click="showInfo($event, 0)">
     <div id="posList" />
-    <input id="fileInput" type="file" accept=".json,.geojson" hidden />
+    <el-upload
+      ref="importUpload"
+      class="workspace-file-upload"
+      accept=".json,.geojson"
+      :auto-upload="false"
+      :show-file-list="false"
+      :limit="1"
+      :on-change="handleImportFileChange"
+    >
+      <el-button>选择 GeoJSON 文件</el-button>
+    </el-upload>
 
     <template v-if="checkFlag">
-      <div id="map" ref="imgBox" class="map-layer" :style="{ height: mapDivHeight + 'px', width: '100%' }" />
-      <div id="threeContainer" ref="threeContainer" class="model-layer" :style="{ height: mapDivHeight + 'px', width: '100%' }" />
+      <el-header class="workspace-header" height="var(--studio-header-height)">
+        <StudioHeader
+          :building-count="finalData.length"
+          :point-count="pointCount"
+          :scene-mode-label="sceneModeLabel"
+          :theme-mode="themeMode"
+          @import="openImportDialog"
+          @export="exportJson(0)"
+          @help="showInfo($event, 1)"
+          @about="showInfo($event, 2)"
+          @toggle-theme="toggleTheme"
+        />
+      </el-header>
 
-      <StudioHeader
-        :building-count="finalData.length"
-        :point-count="pointCount"
-        :scene-mode-label="sceneModeLabel"
-        @import="openImportDialog"
-        @export="exportJson(0)"
-        @help="showInfo($event, 1)"
-        @about="showInfo($event, 2)"
-      />
+      <el-main class="workspace-main">
+        <el-container class="workspace-body">
+          <el-aside class="workspace-left" width="var(--studio-left-width)">
+            <WorkspaceRail
+              v-model:active-panel="activeWorkspacePanel"
+              @change-scene="updateView"
+              @info="showInfo($event, 4)"
+            />
 
-      <WorkspaceRail
-        v-model:active-panel="activeWorkspacePanel"
-        :ai-active="aiRunning || aiProviderDialogVisible"
-        @change-scene="updateView"
-        @open-ai="openAIWorkspace"
-        @info="showInfo($event, 4)"
-      />
+            <WorkspaceSidebar
+              v-model:active-panel="activeWorkspacePanel"
+              v-model:search="toolSearch"
+              v-model:ai-active-model-key="aiActiveModelKey"
+              :buildings="finalData"
+              :selected-visual-mode="selectedVisualMode"
+              :scene-mode-label="sceneModeLabel"
+              :ai-running="aiRunning"
+              :ai-providers="aiProviders"
+              :user-label="currUserIsTry"
+              @select="updatePanel"
+              @import="openImportDialog"
+              @add-layer="toggleLayerPanel"
+              @draw="handleDrawArea"
+              @north="handleGoNorth"
+              @reset="handleResetHome"
+              @position="togglePositionPanel"
+              @coming-soon="showComingSoon"
+              @export-json="exportJson(0)"
+              @export-gltf="exportGltf"
+              @change-scene="updateView"
+              @adjust-height="adjustAllHeight"
+              @change-visual-mode="setVisualMode"
+              @toggle-panels="toggleAllPanels"
+              @open-ai="openAIProviderManager"
+              @run-ai="handleAIAssist"
+              @change-ai-model="onActiveAIModelChange"
+            />
+          </el-aside>
 
-      <WorkspaceSidebar
-        v-model:active-panel="activeWorkspacePanel"
-        v-model:search="toolSearch"
-        v-model:ai-active-model-key="aiActiveModelKey"
-        :buildings="finalData"
-        :selected-visual-mode="selectedVisualMode"
-        :scene-mode-label="sceneModeLabel"
-        :ai-running="aiRunning"
-        :ai-providers="aiProviders"
-        :user-label="currUserIsTry"
-        @select="updatePanel"
-        @import="openImportDialog"
-        @add-layer="toggleLayerPanel"
-        @draw="handleDrawArea"
-        @north="handleGoNorth"
-        @reset="handleResetHome"
-        @position="togglePositionPanel"
-        @coming-soon="showComingSoon"
-        @export-json="exportJson(0)"
-        @export-gltf="exportGltf"
-        @change-scene="updateView"
-        @adjust-height="adjustAllHeight"
-        @change-visual-mode="setVisualMode"
-        @toggle-panels="toggleAllPanels"
-        @open-ai="openAIProviderManager"
-        @run-ai="handleAIAssist"
-        @change-ai-model="onActiveAIModelChange"
-      />
+          <el-main class="workspace-center">
+            <el-container class="map-stage" aria-label="三维地图工作区">
+              <div id="map" ref="imgBox" class="map-layer" />
+              <div id="threeContainer" ref="threeContainer" class="model-layer" />
 
-      <MapWorkspaceControls
-        :drawing-active="drawingActive"
-        :building-count="finalData.length"
-        :point-count="pointCount"
-        :visual-mode-label="visualModeLabel"
-        :average-height="averageExtrudeHeight"
-        :scene-mode-label="sceneModeLabel"
-        @reset="handleResetHome"
-        @north="handleGoNorth"
-        @draw="handleDrawArea"
-        @position="togglePositionPanel"
-      />
+              <MapWorkspaceControls
+                :drawing-active="drawingActive"
+                :building-count="finalData.length"
+                :point-count="pointCount"
+                :visual-mode-label="visualModeLabel"
+                :average-height="averageExtrudeHeight"
+                :scene-mode-label="sceneModeLabel"
+                @reset="handleResetHome"
+                @north="handleGoNorth"
+                @draw="handleDrawArea"
+                @position="togglePositionPanel"
+              />
+
+              <AIRecognitionProgress
+                :running="aiRunning"
+                :percentage="aiProgress"
+                :stage="aiProgressStage"
+                :model-label="activeAIModelLabel"
+                :started-at="aiProgressStartedAt"
+              />
+
+              <WorkspaceFeedback
+                :help-visible="infoShow1"
+                :about-visible="infoShow2"
+                :pricing-visible="infoShow3"
+                :info-visible="infoShow4"
+                :error-visible="errShow1"
+                :error-message="currUserErrorMsg"
+                :download-progress="downloadProgress"
+                :download-progress-colors="downloadProgressColors"
+              />
+
+              <WorkspaceDialogs
+                :position-visible="leftShow1"
+                :layer-visible="leftShow2"
+                :position-form="posForm"
+                :layer-form="layerForm"
+                @submit-position="posFormSubmit"
+                @cancel-position="posFormCancel"
+                @submit-layer="layerFormSubmit"
+                @cancel-layer="layerFormCancel"
+              />
+            </el-container>
+          </el-main>
+
+          <el-aside class="workspace-right" width="var(--studio-inspector-width)">
+            <ObjectInspector
+              ref="scrollContainer"
+              :buildings="finalData"
+              :point-count="pointCount"
+              :average-height="averageExtrudeHeight"
+              :panel-toggle-text="panelToggleText"
+              :predefine-colors="predefineColors"
+              @toggle-panels="toggleAllPanels"
+              @draw="handleDrawArea"
+              @select="updatePanel"
+              @delete="deleteSingle"
+              @update="updateAll"
+              @input="updateAllInput"
+            />
+          </el-aside>
+        </el-container>
+      </el-main>
     </template>
-
-    <AIRecognitionProgress
-      :running="aiRunning"
-      :percentage="aiProgress"
-      :stage="aiProgressStage"
-      :model-label="activeAIModelLabel"
-      :started-at="aiProgressStartedAt"
-    />
-
-    <WorkspaceFeedback
-      :help-visible="infoShow1"
-      :about-visible="infoShow2"
-      :pricing-visible="infoShow3"
-      :info-visible="infoShow4"
-      :error-visible="errShow1"
-      :error-message="currUserErrorMsg"
-      :download-progress="downloadProgress"
-      :download-progress-colors="downloadProgressColors"
-    />
-
-    <WorkspaceDialogs
-      :position-visible="leftShow1"
-      :layer-visible="leftShow2"
-      :position-form="posForm"
-      :layer-form="layerForm"
-      @submit-position="posFormSubmit"
-      @cancel-position="posFormCancel"
-      @submit-layer="layerFormSubmit"
-      @cancel-layer="layerFormCancel"
-    />
-
-    <ObjectInspector
-      ref="scrollContainer"
-      :buildings="finalData"
-      :height="mapDivHeight - 70"
-      :point-count="pointCount"
-      :average-height="averageExtrudeHeight"
-      :panel-toggle-text="panelToggleText"
-      :predefine-colors="predefineColors"
-      @toggle-panels="toggleAllPanels"
-      @draw="handleDrawArea"
-      @select="updatePanel"
-      @delete="deleteSingle"
-      @update="updateAll"
-      @input="updateAllInput"
-    />
 
     <AIProviderDialog
       v-model:visible="aiProviderDialogVisible"
@@ -134,7 +154,7 @@
       @remove-model="removeAIModel"
       @change-model="onActiveAIModelChange"
     />
-  </main>
+  </el-container>
 </template>
 
 <script lang="ts">
@@ -155,6 +175,25 @@ import { listActiveVisionModels } from '../lib/ai/vision-provider-registry.ts'
  * 这里保留 Options API 写法，避免一次性重构过大影响现有 Cesium / Three 逻辑。
  */
 const createBaseData = homeViewOptions.data
+type WorkspaceTheme = 'light' | 'dark'
+
+const THEME_STORAGE_KEY = 'geobuild-workspace-theme'
+
+function readInitialTheme(): WorkspaceTheme {
+  try {
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+    if (storedTheme === 'light' || storedTheme === 'dark') return storedTheme
+  } catch {
+    // Storage can be unavailable in hardened browser contexts.
+  }
+
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function applyDocumentTheme(theme: WorkspaceTheme) {
+  document.documentElement.dataset.theme = theme
+  document.documentElement.style.colorScheme = theme
+}
 
 export default {
   ...homeViewOptions,
@@ -176,11 +215,14 @@ export default {
      * `selectedVisualMode` 只负责按钮状态，不直接参与底层几何生成。
      */
     const baseData = typeof createBaseData === 'function' ? createBaseData.call(this) : {}
+    const themeMode = readInitialTheme()
+    applyDocumentTheme(themeMode)
     return {
       ...baseData,
       selectedVisualMode: 'preview',
       activeWorkspacePanel: 'layers',
-      toolSearch: ''
+      toolSearch: '',
+      themeMode
     }
   },
   computed: {
@@ -213,6 +255,24 @@ export default {
   },
   methods: {
     ...(homeViewOptions.methods || {}),
+    toggleTheme() {
+      const nextTheme: WorkspaceTheme = this.themeMode === 'dark' ? 'light' : 'dark'
+      this.themeMode = nextTheme
+      applyDocumentTheme(nextTheme)
+
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+      } catch {
+        // Theme switching still works when persistence is unavailable.
+      }
+
+      if (!this.sceneFlag && window.myViewer?.viewer?.scene) {
+        window.myViewer.viewer.scene.backgroundColor = window.Cesium.Color.fromCssColorString(
+          nextTheme === 'dark' ? '#0b1120' : '#e9eef5'
+        )
+        window.myViewer.viewer.scene.requestRender?.()
+      }
+    },
     matchesSearch(...labels) {
       const keyword = String(this.toolSearch || '').trim().toLowerCase()
       if (!keyword) return true
@@ -284,8 +344,59 @@ export default {
      * 触发隐藏文件输入框，导入 GeoJSON。
      */
     openImportDialog() {
-      const fileInput = document.getElementById('fileInput')
-      if (fileInput) fileInput.click()
+      const fileInput = this.$refs.importUpload?.$el?.querySelector?.('input[type="file"]')
+      fileInput?.click()
+    },
+    handleImportFileChange(uploadFile) {
+      const file = uploadFile?.raw
+      if (!file) {
+        this.notify?.('上传的文件为空', 'warning')
+        return
+      }
+
+      const suffix = String(file.name || '').split('.').pop()?.toLowerCase()
+      if (suffix !== 'json' && suffix !== 'geojson') {
+        this.notify?.('请上传 json 或 geojson 格式的数据', 'warning')
+        this.$refs.importUpload?.clearFiles?.()
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (loadEvent) => {
+        try {
+          if (typeof loadEvent.target?.result !== 'string') return
+          const json = JSON.parse(loadEvent.target.result)
+          this.finalData = this.convertDefaultJson(json)
+          this.highlightButton('预览模型')
+          this.updateAll()
+          this.currId = this.finalData.length
+
+          if (this.finalData.length) {
+            const [lon, lat] = this.finalData[0].lonlats[0]
+            window.myViewer?.locationCenter?.({
+              pos: [lon, lat],
+              headingAngle: -45,
+              pitchAngle: -45,
+              distance: 800
+            })
+            if (this.baseWidgetObject?.homePos) {
+              this.baseWidgetObject.homePos.pos = [lon, lat]
+              this.baseWidgetObject.homePos.distance = 800
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing JSON:', error)
+          this.notify?.('文件内容不是有效的 JSON / GeoJSON', 'error')
+        } finally {
+          this.$refs.importUpload?.clearFiles?.()
+        }
+      }
+      reader.onerror = (error) => {
+        console.error('Error reading file:', error)
+        this.notify?.('读取文件失败', 'error')
+        this.$refs.importUpload?.clearFiles?.()
+      }
+      reader.readAsText(file)
     },
     /**
      * 统一消息提示出口，兼容旧逻辑中的 `window.Mx`。
@@ -326,22 +437,6 @@ export default {
       this.leftShow1 = false
       this.leftShow2 = false
       this.useActiveAIModel?.()
-    },
-    /**
-     * 竖向活动栏的 AI 入口只负责打开模型中心；任何模型都必须由用户主动选择。
-     */
-    openAIWorkspace() {
-      if (this.aiRunning) {
-        this.notify('AI识别进行中，请稍候', 'info')
-        return
-      }
-
-      this.activeWorkspacePanel = 'tools'
-      this.toolSearch = 'AI'
-      this.closeFloatPanels()
-      this.leftShow1 = false
-      this.leftShow2 = false
-      this.openAIProviderManager?.()
     },
     /**
      * 一键折叠/展开右侧所有几何配置卡片。

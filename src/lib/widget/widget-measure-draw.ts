@@ -2,7 +2,9 @@
  * 测距、测面与绘制控件实现。
  */
 
-export const measureDrawMethods = {
+import { defineRecoveredMethods } from '../recovered-sdk-types.ts'
+
+export const measureDrawMethods = defineRecoveredMethods({
   constructor() {},
 
   drawMea(options) {
@@ -313,7 +315,7 @@ export const measureDrawMethods = {
         const previousPoint = turf.point([previous[0], previous[1]])
         const bearing = turf.bearing(previousPoint, currentPoint)
         const distance = 200
-        const options = { units: 'meters' }
+        const options = { units: 'meters' as const }
         const top = turf.destination(currentPoint, distance, bearing, options).geometry.coordinates
         const bottom = turf.destination(currentPoint, distance, bearing - 180, options).geometry.coordinates
         const left = turf.destination(currentPoint, distance, bearing - 90, options).geometry.coordinates
@@ -616,7 +618,7 @@ export const measureDrawMethods = {
     }
     return Math.abs(parseFloat((area / 1000000).toFixed(2)))
   }
-}
+})
 
 export default measureDrawMethods
 

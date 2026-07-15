@@ -3,8 +3,12 @@
  */
 
 import PrimitiveManagerRecovered from '../widget/widget-primitive-manager.ts'
+import {
+  defineRecoveredMethods,
+  type RecoveredRuntimeContext
+} from '../recovered-sdk-types.ts'
 
-export const geometryGroundMethods = {
+export const geometryGroundMethods = defineRecoveredMethods({
   groundLine(options) {
     const primitive = this.commonGroundLineGeo(options)
     this.GEManage = new PrimitiveManagerRecovered(options.viewer)
@@ -23,7 +27,6 @@ export const geometryGroundMethods = {
     for (let index = 0; index < options.instancesArr.length; index += 1) {
       const item = options.instancesArr[index]
       const geometry = new Cesium.GroundPolylineGeometry({
-        vertexFormat: Cesium.PolylineMaterialAppearance.VERTEX_FORMAT,
         positions: Cesium.Cartesian3.fromDegreesArray(item.pos.flat(2)),
         width: item.width
       })
@@ -71,8 +74,7 @@ export const geometryGroundMethods = {
       geometryInstances: instances,
       appearance: new Cesium.PolylineMaterialAppearance({ material }),
       asynchronous: false,
-      releaseGeometryInstances: false,
-      shadows
+      releaseGeometryInstances: false
     })
   },
 
@@ -154,7 +156,7 @@ export const geometryGroundMethods = {
       releaseGeometryInstances: false,
       shadows
     })
-    primitive.id = 'mask'
+    ;(primitive as unknown as RecoveredRuntimeContext).id = 'mask'
     return primitive
   },
 
@@ -206,8 +208,7 @@ export const geometryGroundMethods = {
         flat: false
       }),
       asynchronous: false,
-      releaseGeometryInstances: false,
-      shadows: options.shadows ? Cesium.ShadowMode.ENABLED : Cesium.ShadowMode.DISABLED
+      releaseGeometryInstances: false
     })
   },
 
@@ -270,10 +271,10 @@ export const geometryGroundMethods = {
       releaseGeometryInstances: false,
       shadows: options.shadows ? Cesium.ShadowMode.ENABLED : Cesium.ShadowMode.DISABLED
     })
-    primitive.id = 'mask'
+    ;(primitive as unknown as RecoveredRuntimeContext).id = 'mask'
     return primitive
   }
-}
+})
 
 export default geometryGroundMethods
 

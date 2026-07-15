@@ -4,6 +4,10 @@
 
 import { MeasureRecovered } from '../mbs-sdk-exports-core.ts'
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface BaseWidgetRecovered extends RecoveredRuntimeContext {}
+
 const DEFAULT_HOME_POS = {
   pos: [113.73, 34.77],
   heading: 0,
@@ -193,7 +197,7 @@ export class BaseWidgetRecovered {
     layerPanel.addEventListener('click', (event) => {
       const target = event.target
       if (
-        target &&
+        target instanceof Element &&
         (target.matches('.mbs-layer-label') || target.matches('.mbs-layer-checkbox'))
       ) {
         this.checkLayerControlChange()
@@ -208,7 +212,7 @@ export class BaseWidgetRecovered {
 
   buildRootStyle() {
     const themeDark = this.theme === 'dark'
-    const style = {
+    const style: Record<string, string | number> = {
       position: 'absolute',
       display: 'flex',
       flexDirection: 'column',
@@ -329,9 +333,10 @@ export class BaseWidgetRecovered {
   }
 
   getSelectedCheckboxes() {
-    const checkboxes = document
-      .getElementById('mbs-layer-control')
-      .querySelectorAll("input[type='checkbox']")
+    const checkboxes =
+      document
+        .getElementById('mbs-layer-control')
+        ?.querySelectorAll<HTMLInputElement>("input[type='checkbox']") ?? []
     const result = []
     for (let index = 0; index < checkboxes.length; index += 1) {
       if (checkboxes[index].checked) {

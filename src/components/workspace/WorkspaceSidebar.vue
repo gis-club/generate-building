@@ -21,6 +21,7 @@ import {
   View,
 } from '@element-plus/icons-vue'
 import type { BuildingGeometry, VisionProviderConfig, VisualMode, WorkspacePanel } from '@/types/workspace'
+import WorkspaceToolAction from './WorkspaceToolAction.vue'
 
 const props = defineProps<{
   activePanel: WorkspacePanel
@@ -69,16 +70,16 @@ function updateAIModel(value: string) {
 </script>
 
 <template>
-  <aside class="left-toolbar studio-sidebar" @click.stop>
-    <div class="studio-sidebar__header">
-      <div>
-        <span class="studio-panel-kicker">Workspace</span>
-        <h1>{{ activePanel === 'layers' ? '数据与图层' : '空间处理工具' }}</h1>
-      </div>
+  <el-container class="left-toolbar studio-sidebar" direction="vertical" @click.stop>
+    <el-header class="studio-sidebar__header" height="66px">
+      <el-space direction="vertical" alignment="flex-start" :size="0">
+        <el-text class="studio-panel-kicker" size="small">Workspace</el-text>
+        <el-text tag="h1">{{ activePanel === 'layers' ? '数据与图层' : '空间处理工具' }}</el-text>
+      </el-space>
       <el-tag size="small" effect="dark" round class="studio-count-badge">
         {{ activePanel === 'layers' ? buildings.length + 1 : 15 }}
       </el-tag>
-    </div>
+    </el-header>
 
     <el-segmented
       class="studio-sidebar__tabs"
@@ -96,143 +97,153 @@ function updateAIModel(value: string) {
       @update:model-value="$emit('update:search', $event)"
     />
 
-    <div v-if="activePanel === 'layers'" class="studio-sidebar__scroll">
-      <section class="studio-section">
-        <div class="studio-section__heading">
-          <span>地图内容</span>
+    <el-scrollbar v-if="activePanel === 'layers'" class="studio-sidebar__scroll">
+      <el-card class="studio-section" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle" justify="space-between">
+          <el-text>地图内容</el-text>
           <el-button text circle :icon="Plus" title="添加图层" @click="$emit('add-layer')" />
-        </div>
+        </el-row>
 
-        <div v-show="matchesSearch('ArcGIS 卫星影像 底图')" class="studio-layer-row is-basemap">
-          <span class="studio-layer-thumb studio-layer-thumb--imagery" />
-          <div><strong>ArcGIS 卫星影像</strong><small>影像底图 · 在线</small></div>
-          <el-tag size="small" type="info" class="studio-layer-tag">底图</el-tag>
-        </div>
+        <el-card v-show="matchesSearch('ArcGIS 卫星影像 底图')" class="studio-layer-row is-basemap" shadow="never">
+          <el-row class="studio-layer-row__content" align="middle" :gutter="8">
+            <el-col :span="5"><el-avatar class="studio-layer-thumb studio-layer-thumb--imagery" shape="square" :size="38" /></el-col>
+            <el-col :span="14">
+              <el-space direction="vertical" alignment="flex-start" :size="0">
+                <el-text tag="strong">ArcGIS 卫星影像</el-text><el-text size="small" type="info">影像底图 · 在线</el-text>
+              </el-space>
+            </el-col>
+            <el-col :span="5"><el-tag size="small" type="info" class="studio-layer-tag">底图</el-tag></el-col>
+          </el-row>
+        </el-card>
 
-        <div
+        <el-card
           v-for="item in buildings"
           v-show="matchesSearch(item.name || `建筑 ${item.id + 1}`)"
           :key="`layer-${item.id}`"
           class="studio-layer-row"
+          shadow="never"
           @click="$emit('select', item.id)"
         >
-          <span class="studio-layer-thumb" :style="{ background: item.color }"><el-icon><Box /></el-icon></span>
-          <div>
-            <strong>{{ item.name || `建筑 ${item.id + 1}` }}</strong>
-            <small>面要素 · {{ Math.max(item.lonlats.length - 1, 0) }} 个节点</small>
-          </div>
-          <span class="studio-layer-dot" />
-        </div>
+          <el-row class="studio-layer-row__content" align="middle" :gutter="8">
+            <el-col :span="5"><el-avatar class="studio-layer-thumb" shape="square" :size="38" :style="{ background: item.color }"><el-icon><Box /></el-icon></el-avatar></el-col>
+            <el-col :span="17">
+              <el-space direction="vertical" alignment="flex-start" :size="0">
+                <el-text tag="strong">{{ item.name || `建筑 ${item.id + 1}` }}</el-text>
+                <el-text size="small" type="info">面要素 · {{ Math.max(item.lonlats.length - 1, 0) }} 个节点</el-text>
+              </el-space>
+            </el-col>
+            <el-col :span="2"><el-badge is-dot type="success" class="studio-layer-dot" /></el-col>
+          </el-row>
+        </el-card>
 
         <el-empty v-if="buildings.length === 0" class="studio-empty-layer" description="还没有建筑图层" :image-size="52">
           <el-button type="primary" :icon="EditPen" @click="$emit('draw')">绘制第一个区域</el-button>
         </el-empty>
-      </section>
+      </el-card>
 
-      <section class="studio-section studio-section--actions">
-        <div class="studio-section__heading"><span>数据源</span></div>
-        <el-button class="studio-action-row" text @click="$emit('import')">
-          <span><el-icon><Upload /></el-icon></span><span><strong>导入本地数据</strong><small>GeoJSON / JSON</small></span>
-        </el-button>
-        <el-button class="studio-action-row" text @click="$emit('add-layer')">
-          <span><el-icon><MapLocation /></el-icon></span><span><strong>连接在线图层</strong><small>XYZ / WMTS 服务</small></span>
-        </el-button>
-      </section>
-    </div>
+      <el-card class="studio-section studio-section--actions" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle"><el-text>数据源</el-text></el-row>
+        <WorkspaceToolAction kind="action" :icon="Upload" title="导入本地数据" subtitle="GeoJSON / JSON" @click="$emit('import')" />
+        <WorkspaceToolAction kind="action" :icon="MapLocation" title="连接在线图层" subtitle="XYZ / WMTS 服务" @click="$emit('add-layer')" />
+      </el-card>
+    </el-scrollbar>
 
-    <div v-else class="studio-sidebar__scroll studio-toolbox">
-      <section v-show="matchesSearch('绘制区域 导入 GeoJSON')" class="studio-section">
-        <div class="studio-section__heading"><span>最近使用</span></div>
-        <div class="studio-recent-grid">
-          <el-button plain @click="$emit('draw')"><el-icon><EditPen /></el-icon><span>绘制区域</span></el-button>
-          <el-button plain @click="$emit('import')"><el-icon><Upload /></el-icon><span>导入数据</span></el-button>
-        </div>
-      </section>
+    <el-scrollbar v-else class="studio-sidebar__scroll studio-toolbox">
+      <el-card v-show="matchesSearch('绘制区域 导入 GeoJSON')" class="studio-section" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle"><el-text>最近使用</el-text></el-row>
+        <el-row class="studio-recent-grid" :gutter="6">
+          <el-col :span="12"><el-button plain @click="$emit('draw')"><el-icon><EditPen /></el-icon><span>绘制区域</span></el-button></el-col>
+          <el-col :span="12"><el-button plain @click="$emit('import')"><el-icon><Upload /></el-icon><span>导入数据</span></el-button></el-col>
+        </el-row>
+      </el-card>
 
-      <section v-show="matchesSearch('回到正北 初始位置 自定义位置 图层控制')" class="studio-section">
-        <div class="studio-section__heading"><span>地图导航</span><small>4</small></div>
-        <el-button v-show="matchesSearch('回到正北')" text class="studio-tool-row" @click="$emit('north')">
-          <span><el-icon><Aim /></el-icon></span><span><strong>回到正北</strong><small>校正地图方向</small></span><kbd>N</kbd>
-        </el-button>
-        <el-button v-show="matchesSearch('初始位置')" text class="studio-tool-row" @click="$emit('reset')">
-          <span><el-icon><Refresh /></el-icon></span><span><strong>初始位置</strong><small>回到默认视角</small></span><kbd>H</kbd>
-        </el-button>
-        <el-button v-show="matchesSearch('自定义位置')" text class="studio-tool-row" @click="$emit('position')">
-          <span><el-icon><Location /></el-icon></span><span><strong>定位到坐标</strong><small>WGS84 经纬度</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('图层控制')" text class="studio-tool-row" @click="$emit('coming-soon', '图层控制')">
-          <span><el-icon><MapLocation /></el-icon></span><span><strong>图层控制</strong><small>可见性与顺序</small></span>
-        </el-button>
-      </section>
+      <el-card v-show="matchesSearch('回到正北 初始位置 自定义位置 图层控制')" class="studio-section" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle" justify="space-between"><el-text>地图导航</el-text><el-tag size="small" effect="plain">4</el-tag></el-row>
+        <WorkspaceToolAction v-show="matchesSearch('回到正北')" :icon="Aim" title="回到正北" subtitle="校正地图方向" shortcut="N" @click="$emit('north')" />
+        <WorkspaceToolAction v-show="matchesSearch('初始位置')" :icon="Refresh" title="初始位置" subtitle="回到默认视角" shortcut="H" @click="$emit('reset')" />
+        <WorkspaceToolAction v-show="matchesSearch('自定义位置')" :icon="Location" title="定位到坐标" subtitle="WGS84 经纬度" @click="$emit('position')" />
+        <WorkspaceToolAction v-show="matchesSearch('图层控制')" :icon="MapLocation" title="图层控制" subtitle="可见性与顺序" @click="$emit('coming-soon', '图层控制')" />
+      </el-card>
 
-      <section v-show="matchesSearch('导入 导出 GeoJSON glTF 自定义图层')" class="studio-section">
-        <div class="studio-section__heading"><span>数据管理</span><small>4</small></div>
-        <el-button v-show="matchesSearch('导入 GeoJSON')" text class="studio-tool-row" @click="$emit('import')">
-          <span><el-icon><Upload /></el-icon></span><span><strong>导入 GeoJSON</strong><small>添加本地矢量数据</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('自定义图层')" text class="studio-tool-row" @click="$emit('add-layer')">
-          <span><el-icon><Plus /></el-icon></span><span><strong>添加在线图层</strong><small>连接地图服务</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('导出 GeoJSON')" text class="studio-tool-row" @click="$emit('export-json')">
-          <span><el-icon><Download /></el-icon></span><span><strong>导出 GeoJSON</strong><small>保存矢量结果</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('导出 glTF')" text class="studio-tool-row" @click="$emit('export-gltf')">
-          <span><el-icon><Download /></el-icon></span><span><strong>导出 glTF</strong><small>保存三维模型</small></span>
-        </el-button>
-      </section>
+      <el-card v-show="matchesSearch('导入 导出 GeoJSON glTF 自定义图层')" class="studio-section" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle" justify="space-between"><el-text>数据管理</el-text><el-tag size="small" effect="plain">4</el-tag></el-row>
+        <WorkspaceToolAction v-show="matchesSearch('导入 GeoJSON')" :icon="Upload" title="导入 GeoJSON" subtitle="添加本地矢量数据" @click="$emit('import')" />
+        <WorkspaceToolAction v-show="matchesSearch('自定义图层')" :icon="Plus" title="添加在线图层" subtitle="连接地图服务" @click="$emit('add-layer')" />
+        <WorkspaceToolAction v-show="matchesSearch('导出 GeoJSON')" :icon="Download" title="导出 GeoJSON" subtitle="保存矢量结果" @click="$emit('export-json')" />
+        <WorkspaceToolAction v-show="matchesSearch('导出 glTF')" :icon="Download" title="导出 glTF" subtitle="保存三维模型" @click="$emit('export-gltf')" />
+      </el-card>
 
-      <section v-show="matchesSearch('场景 高度 模型 线框 隐藏 折叠')" class="studio-section">
-        <div class="studio-section__heading"><span>三维建模</span><small>7</small></div>
-        <el-button v-show="matchesSearch('切换场景')" text class="studio-tool-row" @click="$emit('change-scene')">
-          <span><el-icon><Operation /></el-icon></span><span><strong>切换场景</strong><small>{{ sceneModeLabel }}</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('降低整体高度')" text class="studio-tool-row" @click="$emit('adjust-height', -5)">
-          <span><el-icon><ArrowDown /></el-icon></span><span><strong>降低整体高度</strong><small>全部建筑 -5m</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('升高整体高度')" text class="studio-tool-row" @click="$emit('adjust-height', 5)">
-          <span><el-icon><ArrowUp /></el-icon></span><span><strong>升高整体高度</strong><small>全部建筑 +5m</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('实体预览 模型')" text class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'preview' }" @click="$emit('change-visual-mode', 'preview')">
-          <span><el-icon><View /></el-icon></span><span><strong>实体预览</strong><small>显示建筑模型</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('线框预览 模型')" text class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'wireframe' }" @click="$emit('change-visual-mode', 'wireframe')">
-          <span><el-icon><Grid /></el-icon></span><span><strong>线框预览</strong><small>查看模型拓扑</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('隐藏模型')" text class="studio-tool-row" :class="{ 'is-active': selectedVisualMode === 'hidden' }" @click="$emit('change-visual-mode', 'hidden')">
-          <span><el-icon><Hide /></el-icon></span><span><strong>隐藏模型</strong><small>仅保留底图</small></span>
-        </el-button>
-        <el-button v-show="matchesSearch('折叠 参数')" text class="studio-tool-row" @click="$emit('toggle-panels')">
-          <span><el-icon><Fold /></el-icon></span><span><strong>折叠参数面板</strong><small>整理对象检查器</small></span>
-        </el-button>
-      </section>
+      <el-card v-show="matchesSearch('场景 高度 模型 线框 隐藏 折叠')" class="studio-section" shadow="never" :body-style="{ padding: 0 }">
+        <el-row class="studio-section__heading" align="middle" justify="space-between"><el-text>三维建模</el-text><el-tag size="small" effect="plain">7</el-tag></el-row>
+        <WorkspaceToolAction v-show="matchesSearch('切换场景')" :icon="Operation" title="切换场景" :subtitle="sceneModeLabel" @click="$emit('change-scene')" />
+        <WorkspaceToolAction v-show="matchesSearch('降低整体高度')" :icon="ArrowDown" title="降低整体高度" subtitle="全部建筑 -5m" @click="$emit('adjust-height', -5)" />
+        <WorkspaceToolAction v-show="matchesSearch('升高整体高度')" :icon="ArrowUp" title="升高整体高度" subtitle="全部建筑 +5m" @click="$emit('adjust-height', 5)" />
+        <WorkspaceToolAction v-show="matchesSearch('实体预览 模型')" :icon="View" title="实体预览" subtitle="显示建筑模型" :active="selectedVisualMode === 'preview'" @click="$emit('change-visual-mode', 'preview')" />
+        <WorkspaceToolAction v-show="matchesSearch('线框预览 模型')" :icon="Grid" title="线框预览" subtitle="查看模型拓扑" :active="selectedVisualMode === 'wireframe'" @click="$emit('change-visual-mode', 'wireframe')" />
+        <WorkspaceToolAction v-show="matchesSearch('隐藏模型')" :icon="Hide" title="隐藏模型" subtitle="仅保留底图" :active="selectedVisualMode === 'hidden'" @click="$emit('change-visual-mode', 'hidden')" />
+        <WorkspaceToolAction v-show="matchesSearch('折叠 参数')" :icon="Fold" title="折叠参数面板" subtitle="整理对象检查器" @click="$emit('toggle-panels')" />
+      </el-card>
 
-      <section v-show="matchesSearch('AI 智能 建筑识别')" class="studio-section">
-        <div class="studio-section__heading"><span>智能处理</span><small>Beta</small></div>
-        <el-button text class="studio-tool-row" @click="$emit('open-ai')">
-          <span><el-icon><Setting /></el-icon></span><span><strong>模型供应商</strong><small>配置 Endpoint、API Key 与模型目录</small></span>
-        </el-button>
-        <div class="studio-ai-model-picker">
-          <el-select :model-value="aiActiveModelKey" size="small" placeholder="选择视觉模型" @change="updateAIModel">
-            <el-option-group v-for="provider in aiProviders.filter((item) => item.enabled)" :key="provider.id" :label="provider.name">
-              <el-option
-                v-for="model in provider.models.filter((item) => item.enabled && item.vision)"
-                :key="`${provider.id}::${model.id}`"
-                :label="model.name || model.id"
-                :value="`${provider.id}::${model.id}`"
-              />
-            </el-option-group>
-          </el-select>
-          <el-button text circle :icon="Setting" title="管理模型供应商" @click="$emit('open-ai')" />
-        </div>
-        <el-button text class="studio-tool-row studio-tool-row--ai" :class="{ 'is-active': aiRunning }" @click="$emit('run-ai')">
-          <span><el-icon><MagicStick /></el-icon></span><span><strong>{{ aiRunning ? 'AI 识别中' : 'AI 建筑识别' }}</strong><small>从影像提取建筑轮廓</small></span>
-        </el-button>
-      </section>
-    </div>
+      <el-card v-show="matchesSearch('AI 智能 建筑识别')" class="studio-ai-card" shadow="never">
+        <template #header>
+          <el-row align="middle" justify="space-between" class="studio-ai-card__header">
+            <el-text tag="strong">智能处理</el-text>
+            <el-tag size="small" type="info" effect="plain">Beta</el-tag>
+          </el-row>
+        </template>
 
-    <div class="studio-sidebar__footer">
+        <el-space direction="vertical" alignment="stretch" :size="8" fill class="studio-ai-stack">
+          <el-button plain class="studio-ai-action" @click="$emit('open-ai')">
+            <el-row align="middle" class="studio-ai-action__row">
+              <el-col :span="4"><el-icon class="studio-ai-action__icon"><Setting /></el-icon></el-col>
+              <el-col :span="20">
+                <el-space direction="vertical" alignment="flex-start" :size="0" class="studio-ai-action__copy">
+                  <el-text tag="strong">模型供应商</el-text>
+                  <el-text size="small" type="info">配置 Endpoint、API Key 与模型目录</el-text>
+                </el-space>
+              </el-col>
+            </el-row>
+          </el-button>
+
+          <el-row :gutter="8" align="middle" class="studio-ai-model-row">
+            <el-col :span="20">
+              <el-select :model-value="aiActiveModelKey" placeholder="选择视觉模型" @change="updateAIModel">
+                <el-option-group v-for="provider in aiProviders.filter((item) => item.enabled)" :key="provider.id" :label="provider.name">
+                  <el-option
+                    v-for="model in provider.models.filter((item) => item.enabled && item.vision)"
+                    :key="`${provider.id}::${model.id}`"
+                    :label="model.name || model.id"
+                    :value="`${provider.id}::${model.id}`"
+                  />
+                </el-option-group>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              <el-button circle :icon="Setting" title="管理模型供应商" @click="$emit('open-ai')" />
+            </el-col>
+          </el-row>
+
+          <el-button plain class="studio-ai-action studio-ai-action--primary" :loading="aiRunning" @click="$emit('run-ai')">
+            <el-row align="middle" class="studio-ai-action__row">
+              <el-col :span="4"><el-icon class="studio-ai-action__icon"><MagicStick /></el-icon></el-col>
+              <el-col :span="20">
+                <el-space direction="vertical" alignment="flex-start" :size="0" class="studio-ai-action__copy">
+                  <el-text tag="strong">{{ aiRunning ? 'AI 识别中' : 'AI 建筑识别' }}</el-text>
+                  <el-text size="small" type="info">从影像提取建筑轮廓</el-text>
+                </el-space>
+              </el-col>
+            </el-row>
+          </el-button>
+        </el-space>
+      </el-card>
+    </el-scrollbar>
+
+    <el-footer class="studio-sidebar__footer" height="52px">
       <span class="studio-online-dot" />
-      <div><strong>本地工作区</strong><small>{{ userLabel }} · 自动保存</small></div>
-    </div>
-  </aside>
+      <el-space direction="vertical" alignment="flex-start" :size="0">
+        <el-text tag="strong">本地工作区</el-text>
+        <el-text size="small" type="info">{{ userLabel }} · 自动保存</el-text>
+      </el-space>
+    </el-footer>
+  </el-container>
 </template>

@@ -2,6 +2,10 @@
  * PrimitiveCollection、Label 与 Billboard 集合管理器。
  */
 
+import type { RecoveredRuntimeContext } from '../recovered-sdk-types.ts'
+
+export interface PrimitiveManagerRecovered extends RecoveredRuntimeContext {}
+
 export class PrimitiveManagerRecovered {
   constructor(options) {
     this.viewer = options.viewer
@@ -9,7 +13,10 @@ export class PrimitiveManagerRecovered {
 
   createPrimitiveCollection(name, type) {
     const viewer = this.viewer
-    let collection = new Cesium.PrimitiveCollection()
+    let collection:
+      | InstanceType<typeof Cesium.PrimitiveCollection>
+      | InstanceType<typeof Cesium.LabelCollection>
+      | InstanceType<typeof Cesium.BillboardCollection> = new Cesium.PrimitiveCollection()
 
     switch (type) {
       case 'PrimitiveCollection':
