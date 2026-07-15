@@ -48,24 +48,24 @@ onBeforeUnmount(stopElapsedTimer)
 
 <template>
   <Transition name="ai-progress">
-    <section
+    <el-card
       v-if="running"
-      class="ai-recognition-progress"
+      class="ai-recognition-progress ai-recognition-progress__card"
+      shadow="always"
       role="status"
       aria-live="polite"
       :aria-label="`AI 识别进度 ${normalizedPercentage}%：${stage}`"
     >
-      <el-card class="ai-recognition-progress__card" shadow="always">
-        <div class="ai-recognition-progress__header">
-          <div class="ai-recognition-progress__title">
+        <el-row class="ai-recognition-progress__header" align="middle" justify="space-between">
+          <el-space class="ai-recognition-progress__title" alignment="center" :size="10">
             <el-icon class="ai-recognition-progress__spinner"><Loading /></el-icon>
-            <div>
-              <strong>AI 建筑识别</strong>
-              <span>{{ modelLabel }}</span>
-            </div>
-          </div>
-          <strong class="ai-recognition-progress__percentage">{{ normalizedPercentage }}%</strong>
-        </div>
+            <el-space direction="vertical" alignment="flex-start" :size="0">
+              <el-text tag="strong">AI 建筑识别</el-text>
+              <el-text size="small" type="info">{{ modelLabel }}</el-text>
+            </el-space>
+          </el-space>
+          <el-tag class="ai-recognition-progress__percentage" size="small" type="primary" effect="dark" round>{{ normalizedPercentage }}%</el-tag>
+        </el-row>
 
         <el-progress
           :percentage="normalizedPercentage"
@@ -76,12 +76,11 @@ onBeforeUnmount(stopElapsedTimer)
           :duration="12"
         />
 
-        <div class="ai-recognition-progress__meta">
-          <span>{{ stage }}</span>
-          <span>已用时 {{ elapsedLabel }}</span>
-        </div>
-        <p>模型返回前可能需要一些时间，请保持页面开启。</p>
-      </el-card>
-    </section>
+        <el-row class="ai-recognition-progress__meta" align="middle" justify="space-between">
+          <el-text size="small" type="info">{{ stage }}</el-text>
+          <el-text size="small" type="info">已用时 {{ elapsedLabel }}</el-text>
+        </el-row>
+        <el-text tag="p" size="small" type="info">模型返回前可能需要一些时间，请保持页面开启。</el-text>
+    </el-card>
   </Transition>
 </template>

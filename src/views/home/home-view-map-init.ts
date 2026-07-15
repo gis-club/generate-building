@@ -39,57 +39,6 @@ function bindWidgetButton(vm, title, handler) {
   button.addEventListener('click', handler)
 }
 
-function bindImportFileHandler(vm) {
-  const fileInput = document.getElementById('fileInput') as HTMLInputElement | null
-  if (!fileInput) return
-
-  fileInput.addEventListener('change', function (event) {
-    const target = event.currentTarget as HTMLInputElement
-    const file = target.files?.[0]
-
-    if (!file) {
-      alert('上传的文件为空')
-      return
-    }
-
-    const suffix = file.name.split('.').pop().toLowerCase()
-    if (suffix !== 'json' && suffix !== 'geojson') {
-      alert('请上传 json 或 geojson 格式的数据')
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = function (loadEvent) {
-      try {
-        if (typeof loadEvent.target?.result !== 'string') return
-        const json = JSON.parse(loadEvent.target.result)
-        vm.finalData = vm.convertDefaultJson(json)
-        vm.highlightButton('预览模型')
-        vm.updateAll()
-        vm.currId = vm.finalData.length
-
-        if (!vm.finalData.length) return
-
-        const [lon, lat] = vm.finalData[0].lonlats[0]
-        myViewer.locationCenter({
-          pos: [lon, lat],
-          headingAngle: -45,
-          pitchAngle: -45,
-          distance: 800
-        })
-        vm.baseWidgetObject.homePos.pos = [lon, lat]
-        vm.baseWidgetObject.homePos.distance = 800
-      } catch (error) {
-        console.error('Error parsing JSON:', error)
-      }
-    }
-    reader.onerror = function (error) {
-      console.error('Error reading file:', error)
-    }
-    reader.readAsText(file)
-  })
-}
-
 function addPreviewBaseLayer(viewer) {
   const imageryLayers = viewer.viewer.imageryLayers
   imageryLayers.removeAll()
@@ -170,8 +119,8 @@ export const homeViewMapInitMethods = defineRecoveredMethods({
       const threeContainer = document.getElementById('threeContainer')
       const toolPanel = document.querySelector<HTMLElement>('.tool-panel')
 
-      if (map) map.style.height = window.innerHeight + 'px'
-      if (threeContainer) threeContainer.style.height = window.innerHeight + 'px'
+      if (map) map.style.height = '100%'
+      if (threeContainer) threeContainer.style.height = '100%'
       if (toolPanel) toolPanel.style.height = window.innerHeight - 45 + 'px'
 
       const loadingText = document.querySelector<HTMLElement>('#loading-sam span')
@@ -330,15 +279,11 @@ export const homeViewMapInitMethods = defineRecoveredMethods({
       this.allPanelShow = !this.allPanelShow
     })
     bindWidgetButton(this, 'AI辅助', () => this.useActiveAIModel())
-    bindWidgetButton(this, '导入geojson', () => {
-      const fileInput = document.getElementById('fileInput')
-      if (fileInput) fileInput.click()
-    })
+    bindWidgetButton(this, '导入geojson', () => this.openImportDialog())
 
     const exportPartButton = this.getButtonByTitle('mbs-widget1', '导出局部json')
     if (exportPartButton) exportPartButton.style.display = 'none'
 
-    bindImportFileHandler(this)
   },
   posFormSubmit() {
     window.myViewer.locationCenter({
